@@ -50,14 +50,14 @@ const SearchBar = ({ onSearch, onFilterChange }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-gray-800 text-white px-4 py-2 rounded-l-md focus:outline-none"
             />
-            <button type="submit" className="absolute right-0 top-0 bg-primary text-secondary px-4 py-2 rounded-r-md hover:bg-pink-700">
+            <button type="submit" className="absolute right-0 top-0 bg-primary text-secondary px-4 py-2 rounded-r-md hover:bg-primary-dark">
               🔍
             </button>
           </div>
         </form>
         
         <button 
-          className={`ml-4 px-4 py-2 rounded-md ${showFilters ? 'bg-pink-700 text-white' : 'bg-primary text-secondary'} ${hasActiveFilters ? 'ring-2 ring-pink-500' : ''}`}
+          className={`ml-4 px-4 py-2 rounded-md hover:bg-primary-dark ${showFilters ? 'bg-primary-dark text-white' : 'bg-primary text-secondary'} ${hasActiveFilters ? 'ring-2 ring-primary-dark' : ''}`}
           onClick={() => setShowFilters(!showFilters)}
         >
           Filters {hasActiveFilters && '●'}
@@ -144,7 +144,7 @@ const SearchBar = ({ onSearch, onFilterChange }) => {
             <button 
               type="button" 
               onClick={clearFilters}
-              className="bg-primary text-secondary px-4 py-2 rounded hover:bg-secondary disabled:opacity-50"
+              className="bg-primary text-secondary px-4 py-2 rounded hover:bg-primary-dark disabled:opacity-50"
               disabled={!hasActiveFilters}
             >
               Clear Filters
