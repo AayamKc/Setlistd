@@ -19,23 +19,23 @@ const Header = () => {
 
   return (
     <>
-      <header className="header">
-        <div className="header-container">
+      <header className="bg-secondary text-primary py-4">
+        <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="logo">
-            <h1>Setlisd</h1>
+            <h1 className="text-2xl font-bold">Setlisd</h1>
           </div>
           <div className="auth-section">
             {user ? (
-              <div className="user-menu">
-                <span className="user-name">Welcome, {user.email}</span>
-                <button onClick={handleLogout} className="logout-btn">
+              <div className="flex items-center">
+                <span className="mr-4">Welcome, {user.email}</span>
+                <button onClick={handleLogout} className="bg-primary text-secondary px-4 py-2 rounded hover:bg-pink-700">
                   Logout
                 </button>
               </div>
             ) : (
               <button 
                 onClick={() => setShowLoginModal(true)} 
-                className="login-btn"
+                className="bg-primary text-secondary px-4 py-2 rounded hover:bg-pink-700"
               >
                 Login
               </button>

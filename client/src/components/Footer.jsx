@@ -4,49 +4,49 @@ const Footer = () => {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="footer">
-      <div className="footer-container">
-        <div className="footer-content">
+    <footer className="bg-secondary text-primary py-8">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="footer-section">
-            <h3>Setlisd</h3>
+            <h3 className="text-lg font-bold mb-4">Setlisd</h3>
             <p>Discover and review your favorite concerts and artists.</p>
           </div>
           
           <div className="footer-section">
-            <h4>Legal</h4>
+            <h4 className="text-lg font-bold mb-4">Legal</h4>
             <ul>
-              <li><a href="/privacy">Privacy Policy</a></li>
-              <li><a href="/terms">Terms of Service</a></li>
-              <li><a href="/cookies">Cookie Policy</a></li>
+              <li><a href="/privacy" className="hover:text-white">Privacy Policy</a></li>
+              <li><a href="/terms" className="hover:text-white">Terms of Service</a></li>
+              <li><a href="/cookies" className="hover:text-white">Cookie Policy</a></li>
             </ul>
           </div>
           
           <div className="footer-section">
-            <h4>Support</h4>
+            <h4 className="text-lg font-bold mb-4">Support</h4>
             <ul>
-              <li><a href="/help">Help Center</a></li>
-              <li><a href="/contact">Contact Us</a></li>
-              <li><a href="/feedback">Feedback</a></li>
+              <li><a href="/help" className="hover:text-white">Help Center</a></li>
+              <li><a href="/contact" className="hover:text-white">Contact Us</a></li>
+              <li><a href="/feedback" className="hover:text-white">Feedback</a></li>
             </ul>
           </div>
           
           <div className="footer-section">
-            <h4>Developer</h4>
+            <h4 className="text-lg font-bold mb-4">Developer</h4>
             <p>Developed by <strong>Aayam Kc</strong></p>
             <p>
-              <a href="mailto:kcaayam04@gmail.com" className="developer-email">
+              <a href="mailto:kcaayam04@gmail.com" className="hover:text-white">
                 kcaayam04@gmail.com
               </a>
             </p>
           </div>
         </div>
         
-        <div className="footer-bottom">
-          <div className="copyright">
+        <div className="border-t border-primary mt-8 pt-4 flex justify-between items-center">
+          <div className="text-sm">
             <p>&copy; {currentYear} Setlisd. All rights reserved.</p>
           </div>
           
-          <div className="data-attribution">
+          <div className="text-sm">
             <p>Concert data powered by SeatGeek API</p>
           </div>
         </div>

@@ -80,12 +80,12 @@ const LandingPage = () => {
 
     if (startPage > 1) {
       pages.push(
-        <button key={1} onClick={() => handlePageChange(1)} className="page-btn">
+        <button key={1} onClick={() => handlePageChange(1)} className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-pink-700">
           1
         </button>
       )
       if (startPage > 2) {
-        pages.push(<span key="start-ellipsis" className="ellipsis">...</span>)
+        pages.push(<span key="start-ellipsis" className="mx-1">...</span>)
       }
     }
 
@@ -94,7 +94,7 @@ const LandingPage = () => {
         <button 
           key={i} 
           onClick={() => handlePageChange(i)}
-          className={`page-btn ${pagination.page === i ? 'active' : ''}`}
+          className={`px-4 py-2 rounded mx-1 ${pagination.page === i ? 'bg-pink-700 text-white' : 'bg-primary text-secondary hover:bg-pink-700'}`}
         >
           {i}
         </button>
@@ -103,13 +103,13 @@ const LandingPage = () => {
 
     if (endPage < pagination.pages) {
       if (endPage < pagination.pages - 1) {
-        pages.push(<span key="end-ellipsis" className="ellipsis">...</span>)
+        pages.push(<span key="end-ellipsis" className="mx-1">...</span>)
       }
       pages.push(
         <button 
           key={pagination.pages} 
           onClick={() => handlePageChange(pagination.pages)}
-          className="page-btn"
+          className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-pink-700"
         >
           {pagination.pages}
         </button>
@@ -117,11 +117,11 @@ const LandingPage = () => {
     }
 
     return (
-      <div className="pagination">
+      <div className="flex justify-center items-center my-8">
         <button 
           onClick={() => handlePageChange(pagination.page - 1)}
           disabled={pagination.page === 1}
-          className="page-btn prev"
+          className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-pink-700 disabled:opacity-50"
         >
           Previous
         </button>
@@ -129,7 +129,7 @@ const LandingPage = () => {
         <button 
           onClick={() => handlePageChange(pagination.page + 1)}
           disabled={pagination.page === pagination.pages}
-          className="page-btn next"
+          className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-pink-700 disabled:opacity-50"
         >
           Next
         </button>
@@ -138,42 +138,40 @@ const LandingPage = () => {
   }
 
   return (
-    <div className="landing-page">
+    <div className="bg-secondary min-h-screen">
       <Header />
       
-      <main className="main-content">
-        <div className="hero-section">
-          <div className="hero-content">
-            <h1>Discover Amazing Concerts</h1>
-            <p>Find concerts, read reviews, and share your live music experiences</p>
-          </div>
+      <main className="container mx-auto px-4 py-8">
+        <div className="text-center my-12">
+          <h1 className="text-5xl font-bold text-primary">Discover Amazing Concerts</h1>
+          <p className="text-xl text-gray-400 mt-4">Find concerts, read reviews, and share your live music experiences</p>
         </div>
 
-        <div className="search-section">
+        <div className="my-8">
           <SearchBar 
             onSearch={handleSearch}
             onFilterChange={handleFilterChange}
           />
         </div>
 
-        <div className="events-section">
+        <div>
           {loading && (
-            <div className="loading">
-              <p>Loading concerts...</p>
+            <div className="text-center">
+              <p className="text-primary">Loading concerts...</p>
             </div>
           )}
 
           {error && (
-            <div className="error">
+            <div className="text-center text-red-500">
               <p>{error}</p>
-              <button onClick={() => fetchEvents(searchQuery, filters, pagination.page)}>
+              <button onClick={() => fetchEvents(searchQuery, filters, pagination.page)} className="bg-primary text-secondary px-4 py-2 rounded mt-4 hover:bg-pink-700">
                 Try Again
               </button>
             </div>
           )}
 
           {!loading && !error && events.length === 0 && (
-            <div className="no-results">
+            <div className="text-center text-gray-400">
               <p>No concerts found matching your criteria.</p>
               <p>Try adjusting your search or filters.</p>
             </div>
@@ -181,7 +179,7 @@ const LandingPage = () => {
 
           {!loading && !error && events.length > 0 && (
             <>
-              <div className="events-grid">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {events.map((event) => (
                   <ConcertCard key={event._id || event.seatgeekId} event={event} />
                 ))}
@@ -189,7 +187,7 @@ const LandingPage = () => {
               
               {renderPagination()}
               
-              <div className="results-info">
+              <div className="text-center text-gray-400 mt-8">
                 <p>
                   Showing {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} concerts
                 </p>

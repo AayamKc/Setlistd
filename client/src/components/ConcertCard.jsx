@@ -34,58 +34,59 @@ const ConcertCard = ({ event }) => {
     const hasHalfStar = rating % 1 !== 0
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(<span key={i} className="star full">★</span>)
+      stars.push(<span key={i} className="text-primary">★</span>)
     }
 
     if (hasHalfStar) {
-      stars.push(<span key="half" className="star half">★</span>)
+      stars.push(<span key="half" className="text-primary">★</span>)
     }
 
     const emptyStars = 5 - Math.ceil(rating)
     for (let i = 0; i < emptyStars; i++) {
-      stars.push(<span key={`empty-${i}`} className="star empty">☆</span>)
+      stars.push(<span key={`empty-${i}`} className="text-gray-400">☆</span>)
     }
 
     return stars
   }
 
   return (
-    <div className="concert-card">
-      <div className="card-image">
+    <div className="bg-secondary border border-primary rounded-lg shadow-lg overflow-hidden">
+      <div className="relative">
         <img 
           src={getArtistImage()} 
           alt={getArtistName()}
+          className="w-full h-48 object-cover"
           onError={(e) => {
             e.target.src = '/placeholder-artist.jpg'
           }}
         />
       </div>
       
-      <div className="card-content">
-        <div className="artist-info">
-          <h3 className="artist-name">{getArtistName()}</h3>
-          <p className="tour-name">{getTourName()}</p>
+      <div className="p-4">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold text-primary">{getArtistName()}</h3>
+          <p className="text-gray-400">{getTourName()}</p>
         </div>
         
-        <div className="event-details">
-          <p className="venue">{event.venue?.name}</p>
-          <p className="location">{event.venue?.city}, {event.venue?.state}</p>
-          <p className="date">{formatDate(event.datetime_local)}</p>
+        <div className="text-sm text-gray-400 mb-4">
+          <p>{event.venue?.name}</p>
+          <p>{event.venue?.city}, {event.venue?.state}</p>
+          <p>{formatDate(event.datetime_local)}</p>
         </div>
         
-        <div className="rating-section">
-          <div className="stars">
+        <div className="flex items-center mb-4">
+          <div className="flex">
             {renderStars(event.averageRating || 0)}
           </div>
-          <span className="rating-text">
+          <span className="ml-2 text-gray-400 text-sm">
             {event.averageRating ? event.averageRating.toFixed(1) : 'No ratings'} 
             {event.reviewCount > 0 && ` (${event.reviewCount} reviews)`}
           </span>
         </div>
         
         {event.stats && event.stats.lowest_price && (
-          <div className="price-info">
-            <span className="price">From ${event.stats.lowest_price}</span>
+          <div className="text-lg font-bold text-primary">
+            <span>From ${event.stats.lowest_price}</span>
           </div>
         )}
       </div>

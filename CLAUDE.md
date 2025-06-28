@@ -193,41 +193,54 @@ VITE_API_BASE_URL=http://localhost:3000
 
 ## 🎨 Frontend Components
 
+### Netflix-Inspired Design
+- **Dark Theme**: Black (#141414) background with red (#e50914) accents
+- **Full-width Layout**: Components utilize entire screen space
+- **Horizontal Scrolling**: Concert cards scroll horizontally like Netflix
+- **Glassmorphism Effects**: Backdrop blur and transparency throughout
+- **Consistent Typography**: Helvetica Neue font family
+- **Netflix Red**: Primary brand color (#e50914) for buttons and accents
+
 ### Header Component
-- Displays "Setlisd" branding
-- Shows user authentication status
-- Login/logout functionality
-- Responsive design
+- Fixed position header with backdrop blur
+- "Setlisd" branding in Netflix red with glow effect
+- User authentication status with red accent buttons
+- Transparent overlay design
 
 ### LandingPage Component
-- Main application layout
-- Integrates all sub-components
+- Netflix-style hero section with gradient overlay
+- Full-screen immersive layout
+- Horizontal scrolling concert rows
 - Handles data fetching and state management
-- Pagination for event results
+- Dark-themed pagination system
 
 ### SearchBar Component
-- Text search functionality
-- Advanced filtering options:
-  - City
-  - Artist name
-  - Date range
-  - Price range
-- Collapsible filter panel
+- Dark glassmorphism search container
+- Netflix-red accent buttons and focus states
+- Advanced filtering with dark theme:
+  - City and artist filters
+  - Date range selectors
+  - Price range inputs
+- Collapsible filter panel with backdrop blur
 
 ### ConcertCard Component
-- Displays event information:
-  - Artist image (with fallback)
-  - Artist name
-  - Tour/event name
+- Netflix-style cards (300px width)
+- Horizontal scrolling rows
+- Hover effects with scale and glow
+- Dark theme with red accent stars
+- Displays:
+  - Artist image with zoom effect on hover
+  - Artist name and tour (with text overflow)
   - Venue and location
   - Date and time
-  - Star ratings
-  - Price information
+  - Red star ratings
+  - Price in Netflix red
 
 ### Footer Component
-- Developer information (Aayam Kc)
-- Contact email: kcaayam04@gmail.com
-- Legal links
+- Dark footer (#0f0f0f) with red accents
+- Developer information (Aayam Kc) highlighted in red
+- Contact email: kcaayam04@gmail.com in brand color
+- Legal links with red hover states
 - Data attribution
 
 ## 🔐 Authentication Flow
