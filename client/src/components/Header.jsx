@@ -19,7 +19,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="bg-secondary text-primary py-4">
+      <header className="bg-gray-900 text-primary py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="logo">
             <h1 className="text-4xl font-bold">Setlistd</h1>
@@ -27,7 +27,7 @@ const Header = () => {
           <div className="auth-section">
             {user ? (
               <div className="flex items-center">
-                <span className="mr-4">Welcome, {user.email}</span>
+                <span className="mr-4">Welcome, {user.user_metadata?.username || user.email}</span>
                 <button onClick={handleLogout} className="bg-primary text-secondary px-4 py-2 rounded hover:bg-primary-dark">
                   Logout
                 </button>
