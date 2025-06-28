@@ -41,26 +41,30 @@ const SearchBar = ({ onSearch, onFilterChange }) => {
   return (
     <div className="bg-secondary p-4 rounded-lg">
       <div className="flex items-center">
-        <form onSubmit={handleSearch} className="flex-grow">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search by artist, tour, or venue..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-800 text-white px-4 py-2 rounded-l-md focus:outline-none"
-            />
-            <button type="submit" className="absolute right-0 top-0 bg-primary text-secondary px-4 py-2 rounded-r-md hover:bg-primary-dark">
-              🔍
-            </button>
-          </div>
+        <form onSubmit={handleSearch} className="flex-grow relative">
+          <input
+            type="text"
+            placeholder="Search by artist, tour, or venue..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-gray-800 text-white pl-4 pr-10 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <button type="submit" className="absolute right-0 top-0 h-full w-10 flex items-center justify-center text-primary rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+            </svg>
+          </button>
         </form>
         
         <button 
-          className={`ml-4 px-4 py-2 rounded-md hover:bg-primary-dark ${showFilters ? 'bg-primary-dark text-white' : 'bg-primary text-secondary'} ${hasActiveFilters ? 'ring-2 ring-primary-dark' : ''}`}
+          className={`ml-4 p-2 rounded-full hover:bg-primary-dark ${showFilters ? 'bg-primary-dark text-white' : 'bg-primary text-secondary'} ${hasActiveFilters ? 'ring-2 ring-primary-dark' : ''}`}
           onClick={() => setShowFilters(!showFilters)}
+          title="Toggle Filters"
         >
-          Filters {hasActiveFilters && '●'}
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.707 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          {hasActiveFilters && <span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>}
         </button>
       </div>
 
