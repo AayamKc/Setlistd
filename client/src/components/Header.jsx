@@ -22,7 +22,7 @@ const Header = () => {
       <header className="bg-secondary text-primary py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="logo">
-            <h1 className="text-2xl font-bold">Setlistd</h1>
+            <h1 className="text-4xl font-bold">Setlistd</h1>
           </div>
           <div className="auth-section">
             {user ? (

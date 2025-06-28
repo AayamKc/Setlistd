@@ -3,6 +3,7 @@ import Header from './Header'
 import SearchBar from './SearchBar'
 import ConcertCard from './ConcertCard'
 import Footer from './Footer'
+import TextRotator from './TextRotator'
 import { eventsAPI } from '../utils/api'
 
 const LandingPage = () => {
@@ -143,8 +144,7 @@ const LandingPage = () => {
       
       <main className="container mx-auto px-4 py-8">
         <div className="text-center my-12">
-          <h1 className="text-5xl font-bold text-primary">Discover Amazing Concerts</h1>
-          <p className="text-xl text-gray-400 mt-4">Find concerts, read reviews, and share your live music experiences</p>
+          <h1 className="text-5xl font-bold text-primary"><TextRotator /></h1>
         </div>
 
         <div className="my-8">
