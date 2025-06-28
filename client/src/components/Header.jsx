@@ -22,20 +22,20 @@ const Header = () => {
       <header className="bg-secondary text-primary py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="logo">
-            <h1 className="text-2xl font-bold">Setlisd</h1>
+            <h1 className="text-2xl font-bold">Setlistd</h1>
           </div>
           <div className="auth-section">
             {user ? (
               <div className="flex items-center">
                 <span className="mr-4">Welcome, {user.email}</span>
-                <button onClick={handleLogout} className="bg-primary text-secondary px-4 py-2 rounded hover:bg-pink-700">
+                <button onClick={handleLogout} className="bg-primary text-secondary px-4 py-2 rounded hover:bg-primary-dark">
                   Logout
                 </button>
               </div>
             ) : (
               <button 
                 onClick={() => setShowLoginModal(true)} 
-                className="bg-primary text-secondary px-4 py-2 rounded hover:bg-pink-700"
+                className="bg-primary text-secondary px-4 py-2 rounded hover:bg-primary-dark"
               >
                 Login
               </button>

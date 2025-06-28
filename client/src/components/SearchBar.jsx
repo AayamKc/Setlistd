@@ -144,7 +144,7 @@ const SearchBar = ({ onSearch, onFilterChange }) => {
             <button 
               type="button" 
               onClick={clearFilters}
-              className="bg-primary text-secondary px-4 py-2 rounded hover:bg-pink-700 disabled:opacity-50"
+              className="bg-primary text-secondary px-4 py-2 rounded hover:bg-secondary disabled:opacity-50"
               disabled={!hasActiveFilters}
             >
               Clear Filters

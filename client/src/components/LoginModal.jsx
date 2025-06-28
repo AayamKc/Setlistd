@@ -74,7 +74,7 @@ const LoginModal = ({ onClose }) => {
           
           {error && <div className="text-red-500 mb-4">{error}</div>}
           
-          <button type="submit" disabled={loading} className="w-full bg-primary text-secondary py-2 rounded hover:bg-pink-700 disabled:opacity-50">
+          <button type="submit" disabled={loading} className="w-full bg-primary text-secondary py-2 rounded hover:bg-primary-dark disabled:opacity-50">
             {loading ? 'Loading...' : (isLogin ? 'Login' : 'Sign Up')}
           </button>
         </form>

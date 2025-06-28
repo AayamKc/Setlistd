@@ -6,9 +6,13 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Roboto', 'sans-serif'],
+      },
       colors: {
-        'primary': '#FF69B4',
-        'secondary': '#000000',
+        'primary': '#E6E6FA',
+        'primary-dark': '#D8BFD8',
+        'secondary': '#1A1A2E',
       }
     },
   },
