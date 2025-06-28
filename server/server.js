@@ -3,6 +3,8 @@ const express = require('express');
 const axios = require('axios');
 const connectDB = require('./config/database');
 const Event = require('./models/Event');
+const supabase = require('./config/supabase'); // Supabase client
+const { protect } = require('./middleware/authMiddleware'); // Auth middleware
 
 // Connect to MongoDB
 connectDB();
@@ -11,6 +13,76 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// User Registration
+app.post('/auth/signup', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+    });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    if (data.user) {
+      res.status(201).json({ message: 'User registered successfully', user: data.user });
+    } else {
+      res.status(200).json({ message: 'Please check your email for a confirmation link.' });
+    }
+
+  } catch (err) {
+    console.error('Signup error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// User Login
+app.post('/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+    if (error) {
+      return res.status(401).json({ error: error.message });
+    }
+
+    res.status(200).json({ message: 'Logged in successfully', session: data.session, user: data.user });
+
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Protected route example
+app.get('/api/protected-data', protect, async (req, res) => {
+  res.status(200).json({ message: `Welcome, ${req.user.email}! This is protected data.`, user: req.user });
+});
+
+// User Logout
+app.post('/auth/logout', protect, async (req, res) => {
+  try {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.status(200).json({ message: 'Logged out successfully' });
+
+  } catch (err) {
+    console.error('Logout error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.get('/api/events', async (req, res) => {
   try {
