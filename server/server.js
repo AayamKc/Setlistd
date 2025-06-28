@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const axios = require('axios');
 const connectDB = require('./config/database');
 const Event = require('./models/Event');
@@ -12,6 +13,20 @@ connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// CORS configuration
+app.use(cors({
+  origin: [
+    'http://localhost:5173',  // Vite default port
+    'http://localhost:5174',  // Alternative Vite port
+    'http://localhost:3000',  // Same origin
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 
