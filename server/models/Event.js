@@ -35,40 +35,8 @@ const eventSchema = new mongoose.Schema({
     }
   },
   
-  // Performers/Artists
-  performers: [{
-    id: Number,
-    name: String,
-    short_name: String,
-    url: String,
-    image: String,
-    genres: [{
-      id: Number,
-      name: String,
-      slug: String,
-      primary: Boolean
-    }],
-    primary: Boolean,
-    type: String,
-    score: Number,
-    popularity: Number,
-    image_attribution: String,
-    image_license: String,
-    image_rights_message: String,
-    relative_url: String,
-    slug: String,
-    home_venue_id: Number,
-    num_upcoming_events: Number,
-    has_upcoming_events: Boolean,
-    is_event: Boolean,
-    location: mongoose.Schema.Types.Mixed,
-    colors: mongoose.Schema.Types.Mixed,
-    divisions: mongoose.Schema.Types.Mixed,
-    links: mongoose.Schema.Types.Mixed,
-    stats: mongoose.Schema.Types.Mixed,
-    taxonomies: mongoose.Schema.Types.Mixed,
-    images: mongoose.Schema.Types.Mixed
-  }],
+  // Performers/Artists - accept full performer objects
+  performers: [mongoose.Schema.Types.Mixed],
   
   // Event statistics
   stats: {

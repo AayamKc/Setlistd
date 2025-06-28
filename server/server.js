@@ -21,16 +21,9 @@ app.get('/api/events', async (req, res) => {
       page,
       per_page,
       client_id: process.env.SEATGEEK_CLIENT_ID || 'your_client_id_here',
-      client_secret: process.env.SEATGEEK_CLIENT_SECRET
+      client_secret: process.env.SEATGEEK_CLIENT_SECRET,
+      'taxonomies.name': 'concert'
     };
-
-    // Add type filter for concerts and music festivals
-    if (type) {
-      params.type = type;
-    } else {
-      // Default to concerts and music festivals if no type specified
-      params.type = ['concert', 'music_festival'].join(',');
-    }
     
     const response = await axios.get('https://api.seatgeek.com/2/events', {
       params
@@ -88,6 +81,104 @@ app.get('/api/events', async (req, res) => {
   } catch (error) {
     console.error('SeatGeek API error:', error.message);
     res.status(500).json({ error: 'Failed to fetch events from SeatGeek' });
+  }
+});
+
+// Clear all events from database
+app.get('/api/clear-events', async (req, res) => {
+  try {
+    const result = await Event.deleteMany({});
+    console.log(`Cleared ${result.deletedCount} events from database`);
+    res.json({ 
+      message: 'Successfully cleared all events', 
+      deletedCount: result.deletedCount 
+    });
+  } catch (error) {
+    console.error('Error clearing events:', error);
+    res.status(500).json({ error: 'Failed to clear events' });
+  }
+});
+
+// New endpoint to populate database with diverse concerts from multiple cities
+app.get('/api/populate-concerts', async (req, res) => {
+  try {
+    const cities = ['New York', 'Los Angeles', 'Chicago', 'Atlanta', 'Miami', 'Dallas', 'Philadelphia', 'Phoenix', 'San Antonio', 'San Diego'];
+    let allEvents = [];
+    let totalSaved = 0;
+
+    console.log('Starting diverse concert population...');
+
+    for (const city of cities) {
+      console.log(`\nFetching concerts from ${city}...`);
+      let page = 1;
+      let totalPages = 1;
+
+      while (page <= totalPages && page <= 3) { // Limit to 3 pages per city to avoid overwhelming
+        const params = {
+          'venue.city': city,
+          'taxonomies.name': 'concert',
+          'per_page': 20,
+          page,
+          client_id: process.env.SEATGEEK_CLIENT_ID,
+          client_secret: process.env.SEATGEEK_CLIENT_SECRET
+        };
+
+        try {
+          const response = await axios.get('https://api.seatgeek.com/2/events', { params });
+          const meta = response.data.meta;
+          totalPages = meta.total > 0 ? Math.ceil(meta.total / 20) : 0;
+
+          console.log(`  Page ${page}/${Math.min(totalPages, 3)} - Found ${response.data.events.length} events`);
+
+          // Save events to database
+          for (const eventData of response.data.events) {
+            try {
+              const event = await Event.findOneAndUpdate(
+                { seatgeekId: eventData.id },
+                {
+                  seatgeekId: eventData.id,
+                  title: eventData.title,
+                  datetime_local: new Date(eventData.datetime_local),
+                  datetime_utc: eventData.datetime_utc ? new Date(eventData.datetime_utc) : undefined,
+                  url: eventData.url,
+                  venue: eventData.venue,
+                  performers: eventData.performers,
+                  stats: eventData.stats,
+                  taxonomies: eventData.taxonomies,
+                  type: eventData.type,
+                  status: eventData.status
+                },
+                { upsert: true, new: true }
+              );
+              totalSaved++;
+            } catch (saveError) {
+              console.error(`Error saving event ${eventData.id}:`, saveError.message);
+            }
+          }
+
+          allEvents = allEvents.concat(response.data.events);
+          page++;
+        } catch (cityError) {
+          console.error(`Error fetching from ${city}, page ${page}:`, cityError.message);
+          break;
+        }
+      }
+    }
+
+    console.log(`\n=== POPULATION COMPLETE ===`);
+    console.log(`Total events fetched: ${allEvents.length}`);
+    console.log(`Total events saved to database: ${totalSaved}`);
+
+    res.json({
+      message: 'Successfully populated concerts from multiple cities',
+      totalFetched: allEvents.length,
+      totalSaved: totalSaved,
+      cities: cities
+    });
+
+  } catch (error) {
+    console.error('Error populating concerts:', error);
+    res.status(500).json({ error: 'Failed to populate concerts' });
   }
 });
 
