@@ -5,6 +5,7 @@ const connectDB = require('./config/database');
 const Event = require('./models/Event');
 const supabase = require('./config/supabase'); // Supabase client
 const { protect } = require('./middleware/authMiddleware'); // Auth middleware
+const reviewRoutes = require('./routes/reviewRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -13,6 +14,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// Review Routes
+app.use('/api/events', reviewRoutes);
 
 // User Registration
 app.post('/auth/signup', async (req, res) => {

@@ -59,6 +59,14 @@ const eventSchema = new mongoose.Schema({
   
   type: String,
   status: String,
+  averageRating: {
+    type: Number,
+    default: 0,
+  },
+  reviewCount: {
+    type: Number,
+    default: 0,
+  },
   
   // Metadata
   createdAt: {
