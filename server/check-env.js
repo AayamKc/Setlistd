@@ -1,8 +1,3 @@
-/**
- * Environment Check Script
- * Verifies that all required environment variables are set for Supabase authentication
- */
-
 require('dotenv').config();
 
 const requiredEnvVars = [
