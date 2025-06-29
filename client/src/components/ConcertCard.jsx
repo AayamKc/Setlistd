@@ -50,7 +50,7 @@ const ConcertCard = ({ event }) => {
   }
 
   return (
-    <div className="bg-secondary border border-primary rounded-lg shadow-lg overflow-hidden">
+    <div className="block bg-secondary border border-primary rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
       <div className="relative">
         <img 
           src={getArtistImage()} 

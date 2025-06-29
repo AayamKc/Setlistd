@@ -28,11 +28,8 @@ export const eventsAPI = {
   getSavedEvents: (params) => api.get('/api/saved-events', { params }),
   getEventById: (id) => api.get(`/api/saved-events/${id}`),
   searchEvents: (params) => api.get('/api/events', { params }),
-}
-
-export const reviewsAPI = {
   getEventReviews: (eventId) => api.get(`/api/events/${eventId}/reviews`),
-  createReview: (eventId, data) => api.post(`/api/events/${eventId}/reviews`, data),
+  submitReview: (eventId, data) => api.post(`/api/events/${eventId}/reviews`, data),
 }
 
 export default api

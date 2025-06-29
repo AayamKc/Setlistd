@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { supabase } from '../utils/supabase'
 
-const LoginModal = ({ onClose }) => {
-  const [isLogin, setIsLogin] = useState(true)
+const LoginModal = ({ onClose, initialMode = 'login' }) => {
+  const [isLogin, setIsLogin] = useState(initialMode === 'login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('') // New state for username

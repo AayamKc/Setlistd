@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import Header from './Header'
-import SearchBar from './SearchBar'
 import ConcertCard from './ConcertCard'
 import Footer from './Footer'
 import TextRotator from './TextRotator'
@@ -140,18 +139,15 @@ const LandingPage = () => {
 
   return (
     <div className="bg-secondary min-h-screen">
-      <Header />
+      <Header 
+        onSearch={handleSearch}
+        onFilterChange={handleFilterChange}
+      />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center my-12">
-          <h1 className="text-5xl font-bold text-primary"><TextRotator /></h1>
-        </div>
-
-        <div className="my-8">
-          <SearchBar 
-            onSearch={handleSearch}
-            onFilterChange={handleFilterChange}
-          />
+      <main className="container mx-auto px-4 py-6">
+        <div className="text-center my-8">
+          <h1 className="text-4xl font-bold text-primary mb-2"><TextRotator /></h1>
+          <p className="text-gray-400 text-lg">Discover concerts and share your live music experiences</p>
         </div>
 
         <div>
@@ -179,7 +175,7 @@ const LandingPage = () => {
 
           {!loading && !error && events.length > 0 && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                 {events.map((event) => (
                   <ConcertCard key={event._id || event.seatgeekId} event={event} />
                 ))}
