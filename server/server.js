@@ -105,7 +105,19 @@ app.post('/auth/logout', protect, async (req, res) => {
 
 app.get('/api/events', async (req, res) => {
   try {
-    const { q = 'concert', page = 1, per_page = 20, type = '', save = 'false' } = req.query;
+    const { 
+      q = 'concert', 
+      page = 1, 
+      per_page = 20, 
+      type = '', 
+      save = 'false',
+      city,
+      artist,
+      from_date,
+      to_date,
+      min_price,
+      max_price
+    } = req.query;
     
     const params = {
       q,
@@ -115,6 +127,32 @@ app.get('/api/events', async (req, res) => {
       client_secret: process.env.SEATGEEK_CLIENT_SECRET,
       'taxonomies.name': 'concert'
     };
+
+    // Add city filter if provided
+    if (city) {
+      params['venue.city'] = city;
+    }
+
+    // Add artist filter if provided (SeatGeek uses performers.slug for artist filtering)
+    if (artist) {
+      params['performers.slug'] = artist.toLowerCase().replace(/\s+/g, '-');
+    }
+
+    // Add date range filters if provided
+    if (from_date) {
+      params['datetime_local.gte'] = from_date;
+    }
+    if (to_date) {
+      params['datetime_local.lte'] = to_date;
+    }
+
+    // Add price range filters if provided
+    if (min_price) {
+      params['lowest_price.gte'] = min_price;
+    }
+    if (max_price) {
+      params['highest_price.lte'] = max_price;
+    }
     
     const response = await axios.get('https://api.seatgeek.com/2/events', {
       params

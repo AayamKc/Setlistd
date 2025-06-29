@@ -25,18 +25,30 @@ const LandingPage = () => {
     try {
       const params = {
         page,
-        limit: pagination.limit,
+        per_page: pagination.limit,
         ...filterParams
       }
 
       // If there's a search query, add it to the params
       if (query.trim()) {
         params.q = query
+      } else {
+        // Default search query if none provided
+        params.q = 'concert'
       }
 
-      const response = await eventsAPI.getSavedEvents(params)
+      // Use searchEvents for live SeatGeek API search instead of getSavedEvents
+      const response = await eventsAPI.searchEvents(params)
       setEvents(response.data.events || [])
-      setPagination(response.data.pagination || pagination)
+      
+      // Handle SeatGeek API pagination format
+      const meta = response.data.meta || {}
+      setPagination({
+        page: Number(page),
+        limit: pagination.limit,
+        total: meta.total || 0,
+        pages: Math.ceil((meta.total || 0) / pagination.limit)
+      })
     } catch (err) {
       console.error('Error fetching events:', err)
       setError('Failed to load events. Please try again.')
