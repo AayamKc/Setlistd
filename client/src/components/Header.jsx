@@ -12,7 +12,6 @@ const Header = ({ onSearch, onFilterChange }) => {
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [filters, setFilters] = useState({
     city: '',
-    artist: '',
     from_date: '',
     to_date: ''
   })
@@ -47,7 +46,6 @@ const Header = ({ onSearch, onFilterChange }) => {
   const clearFilters = () => {
     const clearedFilters = {
       city: '',
-      artist: '',
       from_date: '',
       to_date: ''
     }

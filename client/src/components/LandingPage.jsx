@@ -18,6 +18,21 @@ const LandingPage = () => {
     pages: 0
   })
 
+  // Helper function to map filter object to API parameters
+  const mapFiltersToParams = (filterObj) => {
+    const filterParams = {}
+    if (filterObj.city && filterObj.city.trim()) {
+      filterParams.city = filterObj.city.trim()
+    }
+    if (filterObj.from_date && filterObj.from_date.trim()) {
+      filterParams.from_date = filterObj.from_date.trim()
+    }
+    if (filterObj.to_date && filterObj.to_date.trim()) {
+      filterParams.to_date = filterObj.to_date.trim()
+    }
+    return filterParams
+  }
+
   const fetchEvents = useCallback(async (query = '', filterParams = {}, page = 1) => {
     setLoading(true)
     setError('')
@@ -36,6 +51,11 @@ const LandingPage = () => {
         // Default search query if none provided
         params.q = 'concert'
       }
+
+      // Debug: Log the parameters being sent
+      console.log('Fetching events with params:', params)
+      console.log('Query:', query)
+      console.log('Filter params:', filterParams)
 
       // Use searchEvents for live SeatGeek API search instead of getSavedEvents
       const response = await eventsAPI.searchEvents(params)
@@ -64,18 +84,26 @@ const LandingPage = () => {
   const handleSearch = (query) => {
     setSearchQuery(query)
     setPagination(prev => ({ ...prev, page: 1 }))
-    fetchEvents(query, filters, 1)
+    
+    const filterParams = mapFiltersToParams(filters)
+    fetchEvents(query, filterParams, 1)
   }
 
   const handleFilterChange = (newFilters) => {
+    console.log('Filter change received:', newFilters)
     setFilters(newFilters)
     setPagination(prev => ({ ...prev, page: 1 }))
-    fetchEvents(searchQuery, newFilters, 1)
+    
+    const filterParams = mapFiltersToParams(newFilters)
+    console.log('Mapped filter params:', filterParams)
+    fetchEvents(searchQuery, filterParams, 1)
   }
 
   const handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, page: newPage }))
-    fetchEvents(searchQuery, filters, newPage)
+    
+    const filterParams = mapFiltersToParams(filters)
+    fetchEvents(searchQuery, filterParams, newPage)
   }
 
   const renderPagination = () => {
@@ -172,7 +200,10 @@ const LandingPage = () => {
           {error && (
             <div className="text-center text-red-500">
               <p>{error}</p>
-              <button onClick={() => fetchEvents(searchQuery, filters, pagination.page)} className="bg-primary text-secondary px-4 py-2 rounded mt-4 hover:bg-pink-700">
+              <button onClick={() => {
+                const filterParams = mapFiltersToParams(filters)
+                fetchEvents(searchQuery, filterParams, pagination.page)
+              }} className="bg-primary text-secondary px-4 py-2 rounded mt-4 hover:bg-pink-700">
                 Try Again
               </button>
             </div>

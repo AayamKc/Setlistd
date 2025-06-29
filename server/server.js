@@ -112,7 +112,6 @@ app.get('/api/events', async (req, res) => {
       type = '', 
       save = 'false',
       city,
-      artist,
       from_date,
       to_date
     } = req.query;
@@ -131,15 +130,6 @@ app.get('/api/events', async (req, res) => {
       params['venue.city'] = city.trim();
     }
 
-    // Add artist filter if provided - use performers.slug approach but more flexible
-    if (artist && artist.trim()) {
-      // Try both approaches: include in main query AND use performers filter
-      const artistQuery = artist.trim();
-      params.q = q.includes(artistQuery) ? q : `${q} ${artistQuery}`;
-      // Also try the performers approach as a fallback
-      params['performers.slug'] = artistQuery.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
-    }
-
     // Add date range filters if provided (SeatGeek expects YYYY-MM-DD format)
     if (from_date && from_date.trim()) {
       params['datetime_local.gte'] = from_date.trim();
@@ -154,7 +144,6 @@ app.get('/api/events', async (req, res) => {
     console.log('Parameters being sent:', params);
     console.log('Filters applied:', {
       city: city || 'none',
-      artist: artist || 'none', 
       from_date: from_date || 'none',
       to_date: to_date || 'none'
     });
@@ -326,8 +315,6 @@ app.get('/api/saved-events', async (req, res) => {
     const { 
       page = 1, 
       limit = 20, 
-      city, 
-      artist, 
       from_date, 
       to_date 
     } = req.query;
@@ -337,11 +324,6 @@ app.get('/api/saved-events', async (req, res) => {
     // Add city filter
     if (city) {
       filter['venue.city'] = new RegExp(city, 'i');
-    }
-    
-    // Add artist filter
-    if (artist) {
-      filter['performers.name'] = new RegExp(artist, 'i');
     }
     
     // Add date range filter

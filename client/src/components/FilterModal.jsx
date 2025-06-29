@@ -57,23 +57,6 @@ const FilterModal = ({ isOpen, onClose, filters, onFilterChange, onClearFilters,
             />
           </div>
 
-          {/* Artist Filter */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <label className="text-lg font-semibold text-white">Artist</label>
-            </div>
-            <input
-              type="text"
-              placeholder="Enter artist name"
-              value={filters.artist}
-              onChange={(e) => handleFilterChange('artist', e.target.value)}
-              className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
           {/* Date Range Filter */}
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
