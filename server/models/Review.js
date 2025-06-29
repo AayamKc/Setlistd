@@ -3,13 +3,11 @@ const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
   eventId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Event',
+    type: Number, // SeatGeek event ID
     required: true,
   },
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String, // Supabase user ID (UUID string)
     required: true,
   },
   rating: {

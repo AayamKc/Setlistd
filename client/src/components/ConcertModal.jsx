@@ -12,10 +12,10 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   const [existingReviews, setExistingReviews] = useState([]);
 
   useEffect(() => {
-    if (isOpen && event && event._id) {
+    if (isOpen && event && event.id) {
       const fetchReviews = async () => {
         try {
-          const response = await eventsAPI.getEventReviews(event._id);
+          const response = await eventsAPI.getEventReviews(event.id);
           setExistingReviews(response.data);
         } catch (error) {
           console.error('Error fetching reviews:', error);
@@ -55,7 +55,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       return;
     }
     try {
-      await eventsAPI.submitReview(event._id, { rating, reviewText: review });
+      await eventsAPI.submitReview(event.id, { rating, reviewText: review });
       alert('Review submitted successfully!');
       onClose();
     } catch (error) {
@@ -122,7 +122,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
                 {existingReviews.map((rev) => (
                   <div key={rev._id} className="bg-gray-800 p-4 rounded-lg">
                     <div className="flex items-center mb-2">
-                      <p className="font-semibold text-white">{rev.userId.username || 'Anonymous'}</p>
+                      <p className="font-semibold text-white">Anonymous User</p>
                       <p className="ml-auto text-sm text-gray-400">Rating: {rev.rating}/5</p>
                     </div>
                     <p className="text-gray-300">{rev.reviewText}</p>
