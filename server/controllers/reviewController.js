@@ -9,13 +9,8 @@ exports.createReview = async (req, res) => {
   const { rating, reviewText } = req.body;
   const { eventId } = req.params; // This is now a SeatGeek event ID (number)
   
-  console.log('Review submission attempt:');
-  console.log('- Body:', req.body);
-  console.log('- EventId:', eventId);
-  console.log('- User object:', req.user);
-  
   const userId = req.user.id; // Supabase user ID
-  console.log('- Extracted userId:', userId);
+  const username = req.user.user_metadata?.username || 'Anonymous'; // Extract username from user metadata
 
   try {
     // Convert eventId to number since it comes as string from URL params
@@ -38,6 +33,7 @@ exports.createReview = async (req, res) => {
     const review = new Review({
       eventId: seatgeekEventId,
       userId,
+      username,
       rating,
       reviewText,
     });

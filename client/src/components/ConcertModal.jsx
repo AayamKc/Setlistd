@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import LoginModal from './LoginModal';
 import { eventsAPI } from '../utils/api';
+import confetti from 'canvas-confetti';
 
 const ConcertModal = ({ isOpen, onClose, event }) => {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   const [review, setReview] = useState('');
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [existingReviews, setExistingReviews] = useState([]);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     if (isOpen && event && event.id) {
@@ -56,8 +58,27 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
     }
     try {
       await eventsAPI.submitReview(event.id, { rating, reviewText: review });
-      alert('Review submitted successfully!');
-      onClose();
+      
+      // Trigger confetti animation
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      
+      // Show success message
+      setShowSuccessMessage(true);
+      
+      // Reset form
+      setRating(0);
+      setReview('');
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        onClose();
+      }, 3000);
+      
     } catch (error) {
       console.error('Error submitting review:', error);
       alert('Failed to submit review.');
@@ -67,6 +88,17 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black bg-opacity-75 backdrop-blur-sm" onClick={onClose} />
+      
+      {/* Success Message Overlay */}
+      {showSuccessMessage && (
+        <div className="absolute inset-0 flex items-center justify-center z-60">
+          <div className="bg-green-600 text-white px-8 py-4 rounded-lg shadow-2xl text-center">
+            <div className="text-2xl font-bold mb-2">🎉 Review Submitted! 🎉</div>
+            <div className="text-lg">Thank you for your feedback!</div>
+          </div>
+        </div>
+      )}
+      
       <div className="relative bg-gray-900 rounded-lg shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
           <h2 className="text-2xl font-bold text-primary">{getArtistName()}</h2>
@@ -122,7 +154,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
                 {existingReviews.map((rev) => (
                   <div key={rev._id} className="bg-gray-800 p-4 rounded-lg">
                     <div className="flex items-center mb-2">
-                      <p className="font-semibold text-white">Anonymous User</p>
+                      <p className="font-semibold text-white">{rev.username || 'Anonymous User'}</p>
                       <p className="ml-auto text-sm text-gray-400">Rating: {rev.rating}/5</p>
                     </div>
                     <p className="text-gray-300">{rev.reviewText}</p>

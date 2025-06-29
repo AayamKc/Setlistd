@@ -10,6 +10,10 @@ const reviewSchema = new mongoose.Schema({
     type: String, // Supabase user ID (UUID string)
     required: true,
   },
+  username: {
+    type: String, // Username from Supabase user metadata
+    required: true,
+  },
   rating: {
     type: Number,
     required: true,
