@@ -114,9 +114,7 @@ app.get('/api/events', async (req, res) => {
       city,
       artist,
       from_date,
-      to_date,
-      min_price,
-      max_price
+      to_date
     } = req.query;
     
     const params = {
@@ -129,30 +127,37 @@ app.get('/api/events', async (req, res) => {
     };
 
     // Add city filter if provided
-    if (city) {
-      params['venue.city'] = city;
+    if (city && city.trim()) {
+      params['venue.city'] = city.trim();
     }
 
-    // Add artist filter if provided (SeatGeek uses performers.slug for artist filtering)
-    if (artist) {
-      params['performers.slug'] = artist.toLowerCase().replace(/\s+/g, '-');
+    // Add artist filter if provided - use performers.slug approach but more flexible
+    if (artist && artist.trim()) {
+      // Try both approaches: include in main query AND use performers filter
+      const artistQuery = artist.trim();
+      params.q = q.includes(artistQuery) ? q : `${q} ${artistQuery}`;
+      // Also try the performers approach as a fallback
+      params['performers.slug'] = artistQuery.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
     }
 
-    // Add date range filters if provided
-    if (from_date) {
-      params['datetime_local.gte'] = from_date;
+    // Add date range filters if provided (SeatGeek expects YYYY-MM-DD format)
+    if (from_date && from_date.trim()) {
+      params['datetime_local.gte'] = from_date.trim();
     }
-    if (to_date) {
-      params['datetime_local.lte'] = to_date;
+    if (to_date && to_date.trim()) {
+      params['datetime_local.lte'] = to_date.trim();
     }
 
-    // Add price range filters if provided
-    if (min_price) {
-      params['lowest_price.gte'] = min_price;
-    }
-    if (max_price) {
-      params['highest_price.lte'] = max_price;
-    }
+    
+    // Debug: Log the parameters being sent to SeatGeek API
+    console.log('\n=== SEATGEEK API REQUEST ===');
+    console.log('Parameters being sent:', params);
+    console.log('Filters applied:', {
+      city: city || 'none',
+      artist: artist || 'none', 
+      from_date: from_date || 'none',
+      to_date: to_date || 'none'
+    });
     
     const response = await axios.get('https://api.seatgeek.com/2/events', {
       params

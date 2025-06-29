@@ -2,20 +2,19 @@ import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../utils/supabase'
 import LoginModal from './LoginModal'
+import FilterModal from './FilterModal'
 
 const Header = ({ onSearch, onFilterChange }) => {
   const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [modalMode, setModalMode] = useState('login')
   const [searchQuery, setSearchQuery] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilterModal, setShowFilterModal] = useState(false)
   const [filters, setFilters] = useState({
     city: '',
     artist: '',
     from_date: '',
-    to_date: '',
-    min_price: '',
-    max_price: ''
+    to_date: ''
   })
 
   const handleLogout = async () => {
@@ -38,7 +37,11 @@ const Header = ({ onSearch, onFilterChange }) => {
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value }
     setFilters(newFilters)
-    onFilterChange && onFilterChange(newFilters)
+    // Don't apply filters immediately, wait for Apply button
+  }
+
+  const applyFilters = () => {
+    onFilterChange && onFilterChange(filters)
   }
 
   const clearFilters = () => {
@@ -46,9 +49,7 @@ const Header = ({ onSearch, onFilterChange }) => {
       city: '',
       artist: '',
       from_date: '',
-      to_date: '',
-      min_price: '',
-      max_price: ''
+      to_date: ''
     }
     setFilters(clearedFilters)
     onFilterChange && onFilterChange(clearedFilters)
@@ -121,9 +122,9 @@ const Header = ({ onSearch, onFilterChange }) => {
                 </form>
                 
                 <button 
-                  className={`p-2 rounded-full hover:bg-gray-800 ${showFilters ? 'bg-gray-800 text-white' : 'text-primary'} ${hasActiveFilters ? 'ring-2 ring-primary' : ''}`}
-                  onClick={() => setShowFilters(!showFilters)}
-                  title="Toggle Filters"
+                  className={`relative p-2 rounded-full hover:bg-gray-800 ${showFilterModal ? 'bg-gray-800 text-white' : 'text-primary'} ${hasActiveFilters ? 'ring-2 ring-primary' : ''}`}
+                  onClick={() => setShowFilterModal(true)}
+                  title="Open Filters"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.707 7.293A1 1 0 013 6.586V4z" />
@@ -134,95 +135,6 @@ const Header = ({ onSearch, onFilterChange }) => {
             </div>
           </div>
 
-          {/* Filters Panel */}
-          {showFilters && (
-            <div className="mt-4 p-4 bg-gray-800 rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="filter-group">
-                  <label htmlFor="city" className="block text-sm font-medium text-primary">City</label>
-                  <input
-                    type="text"
-                    id="city"
-                    placeholder="Enter city name"
-                    value={filters.city}
-                    onChange={(e) => handleFilterChange('city', e.target.value)}
-                    className="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1"
-                  />
-                </div>
-
-                <div className="filter-group">
-                  <label htmlFor="artist" className="block text-sm font-medium text-primary">Artist</label>
-                  <input
-                    type="text"
-                    id="artist"
-                    placeholder="Enter artist name"
-                    value={filters.artist}
-                    onChange={(e) => handleFilterChange('artist', e.target.value)}
-                    className="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1"
-                  />
-                </div>
-
-                <div className="filter-group">
-                  <label htmlFor="from_date" className="block text-sm font-medium text-primary">From Date</label>
-                  <input
-                    type="date"
-                    id="from_date"
-                    value={filters.from_date}
-                    onChange={(e) => handleFilterChange('from_date', e.target.value)}
-                    className="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1"
-                  />
-                </div>
-
-                <div className="filter-group">
-                  <label htmlFor="to_date" className="block text-sm font-medium text-primary">To Date</label>
-                  <input
-                    type="date"
-                    id="to_date"
-                    value={filters.to_date}
-                    onChange={(e) => handleFilterChange('to_date', e.target.value)}
-                    className="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1"
-                  />
-                </div>
-
-                <div className="filter-group">
-                  <label htmlFor="min_price" className="block text-sm font-medium text-primary">Min Price ($)</label>
-                  <input
-                    type="number"
-                    id="min_price"
-                    placeholder="0"
-                    min="0"
-                    value={filters.min_price}
-                    onChange={(e) => handleFilterChange('min_price', e.target.value)}
-                    className="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1"
-                  />
-                </div>
-
-                <div className="filter-group">
-                  <label htmlFor="max_price" className="block text-sm font-medium text-primary">Max Price ($)</label>
-                  <input
-                    type="number"
-                    id="max_price"
-                    placeholder="1000"
-                    min="0"
-                    value={filters.max_price}
-                    onChange={(e) => handleFilterChange('max_price', e.target.value)}
-                    className="w-full bg-gray-700 text-white px-3 py-2 rounded mt-1"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <button 
-                  type="button" 
-                  onClick={clearFilters}
-                  className="bg-primary text-secondary px-4 py-2 rounded hover:bg-primary-dark disabled:opacity-50"
-                  disabled={!hasActiveFilters}
-                >
-                  Clear Filters
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </header>
       
@@ -232,6 +144,15 @@ const Header = ({ onSearch, onFilterChange }) => {
           initialMode={modalMode}
         />
       )}
+      
+      <FilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={clearFilters}
+        onApplyFilters={applyFilters}
+      />
     </>
   )
 }
