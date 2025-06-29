@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react';
+import ConcertModal from './ConcertModal';
 
 const ConcertCard = ({ event }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const getArtistImage = () => {
     if (event.performers && event.performers.length > 0) {
       const image = event.performers[0].image
@@ -70,7 +72,11 @@ const ConcertCard = ({ event }) => {
   }
 
   return (
-    <div className="block bg-secondary border border-primary rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer w-full max-w-sm mx-auto aspect-[4/5.5]">
+    <>
+      <div 
+        className="block bg-secondary border border-primary rounded-lg shadow-lg overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer w-full max-w-sm mx-auto aspect-[4/5.5]"
+        onClick={() => setIsModalOpen(true)}
+      >
       <div className="relative h-3/5">
         {getArtistImage() ? (
           <img 
@@ -122,6 +128,8 @@ const ConcertCard = ({ event }) => {
         </div>
       </div>
     </div>
+    <ConcertModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} event={event} />
+    </>
   )
 }
 
