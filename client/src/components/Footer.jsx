@@ -13,24 +13,6 @@ const Footer = () => {
           </div>
           
           <div className="footer-section">
-            <h4 className="text-lg font-bold mb-4">Legal</h4>
-            <ul>
-              <li><a href="/privacy" className="hover:text-white">Privacy Policy</a></li>
-              <li><a href="/terms" className="hover:text-white">Terms of Service</a></li>
-              <li><a href="/cookies" className="hover:text-white">Cookie Policy</a></li>
-            </ul>
-          </div>
-          
-          <div className="footer-section">
-            <h4 className="text-lg font-bold mb-4">Support</h4>
-            <ul>
-              <li><a href="/help" className="hover:text-white">Help Center</a></li>
-              <li><a href="/contact" className="hover:text-white">Contact Us</a></li>
-              <li><a href="/feedback" className="hover:text-white">Feedback</a></li>
-            </ul>
-          </div>
-          
-          <div className="footer-section">
             <h4 className="text-lg font-bold mb-4">Developer</h4>
             <p>Developed by <strong>Aayam Kc</strong></p>
             <p>
@@ -50,7 +32,7 @@ const Footer = () => {
             <p>Concert data powered by SeatGeek API</p>
           </div>
         </div>
-      </div>
+      </div>1
     </footer>
   )
 }
