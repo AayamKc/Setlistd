@@ -5,7 +5,7 @@ const LoginModal = ({ onClose, initialMode = 'login' }) => {
   const [isLogin, setIsLogin] = useState(initialMode === 'login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [username, setUsername] = useState('') // New state for username
+  const [username, setUsername] = useState('') 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -22,7 +22,6 @@ const LoginModal = ({ onClose, initialMode = 'login' }) => {
         })
         if (error) throw error
       } else {
-        // Sign up with username in user_metadata
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -55,7 +54,7 @@ const LoginModal = ({ onClose, initialMode = 'login' }) => {
         </div>
         
         <form onSubmit={handleSubmit}>
-          {!isLogin && ( // Conditionally render username input for sign up
+          {!isLogin && (
             <div className="mb-4">
               <label htmlFor="username" className="block mb-2">Username</label>
               <input

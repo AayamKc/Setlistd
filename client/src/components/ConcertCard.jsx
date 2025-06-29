@@ -4,17 +4,10 @@ const ConcertCard = ({ event }) => {
   const getArtistImage = () => {
     if (event.performers && event.performers.length > 0) {
       const image = event.performers[0].image
-      const artistName = event.performers[0].name
-      
-      // Debug: Log the image URL for investigation
-      console.log(`Artist: ${artistName}, Image URL: ${image}`)
       
       // Check if it's a SeatGeek default image and replace with our custom placeholder
       if (image && !isSeatGeekDefaultImage(image)) {
-        console.log(`✅ Using real image for ${artistName}`)
         return image
-      } else {
-        console.log(`🚫 Using custom fallback for ${artistName}`)
       }
     }
     return null // Return null to show our custom fallback
@@ -32,10 +25,7 @@ const ConcertCard = ({ event }) => {
     const hasExtraNumber = /\/performers-landscape\/[^\/]+\/\d+\/\d+\/huge\.jpg$/.test(imageUrl)
     
     // If it's the standard pattern WITHOUT the extra number, it's a default/cartoon
-    const isDefault = isStandardPattern && !hasExtraNumber
-    
-    console.log(`Image check: ${imageUrl} -> ${isDefault ? 'CARTOON DEFAULT' : 'REAL PHOTO'}`)
-    return isDefault
+    return isStandardPattern && !hasExtraNumber
   }
 
   const getArtistName = () => {
@@ -88,7 +78,6 @@ const ConcertCard = ({ event }) => {
             alt={getArtistName()}
             className="w-full h-48 object-cover"
             onError={(e) => {
-              // Hide the img and show the fallback div instead
               e.target.style.display = 'none'
               e.target.nextElementSibling.style.display = 'flex'
             }}

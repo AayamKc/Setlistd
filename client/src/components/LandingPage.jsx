@@ -52,12 +52,12 @@ const LandingPage = () => {
         params.q = 'concert'
       }
 
-      // Debug: Log the parameters being sent
+      
       console.log('Fetching events with params:', params)
       console.log('Query:', query)
       console.log('Filter params:', filterParams)
 
-      // Use searchEvents for live SeatGeek API search instead of getSavedEvents
+     
       const response = await eventsAPI.searchEvents(params)
       setEvents(response.data.events || [])
       
