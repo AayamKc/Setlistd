@@ -25,29 +25,29 @@ const LandingPage = () => {
     try {
       const params = {
         page,
-        per_page: pagination.limit,
+        limit: pagination.limit,
         ...filterParams
       }
 
-      // If there's a search query, add it to the params
+      // Add search query to filters if provided
       if (query.trim()) {
-        params.q = query
-      } else {
-        // Default search query if none provided
-        params.q = 'concert'
+        // For local database search, we can add artist or general search
+        params.search = query
       }
 
-      // Use searchEvents for live SeatGeek API search instead of getSavedEvents
-      const response = await eventsAPI.searchEvents(params)
+      console.log('Fetching saved events with params:', params)
+
+      // Use getSavedEvents to search from local database instead of live SeatGeek API
+      const response = await eventsAPI.getSavedEvents(params)
       setEvents(response.data.events || [])
       
-      // Handle SeatGeek API pagination format
-      const meta = response.data.meta || {}
+      // Handle local database pagination format
+      const pagination_data = response.data.pagination || {}
       setPagination({
         page: Number(page),
         limit: pagination.limit,
-        total: meta.total || 0,
-        pages: Math.ceil((meta.total || 0) / pagination.limit)
+        total: pagination_data.total || 0,
+        pages: pagination_data.pages || 0
       })
     } catch (err) {
       console.error('Error fetching events:', err)
@@ -68,6 +68,7 @@ const LandingPage = () => {
   }
 
   const handleFilterChange = (newFilters) => {
+    console.log('Filter change received in LandingPage:', newFilters)
     setFilters(newFilters)
     setPagination(prev => ({ ...prev, page: 1 }))
     fetchEvents(searchQuery, newFilters, 1)

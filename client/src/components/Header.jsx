@@ -41,7 +41,10 @@ const Header = ({ onSearch, onFilterChange }) => {
   }
 
   const applyFilters = () => {
-    onFilterChange && onFilterChange(filters)
+    console.log('Applying filters:', filters)
+    if (onFilterChange) {
+      onFilterChange(filters)
+    }
   }
 
   const clearFilters = () => {
@@ -52,7 +55,10 @@ const Header = ({ onSearch, onFilterChange }) => {
       to_date: ''
     }
     setFilters(clearedFilters)
-    onFilterChange && onFilterChange(clearedFilters)
+    console.log('Clearing filters')
+    if (onFilterChange) {
+      onFilterChange(clearedFilters)
+    }
   }
 
   const hasActiveFilters = Object.values(filters).some(value => value !== '')

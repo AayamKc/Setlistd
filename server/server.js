@@ -329,19 +329,31 @@ app.get('/api/saved-events', async (req, res) => {
       city, 
       artist, 
       from_date, 
-      to_date 
+      to_date,
+      search
     } = req.query;
 
     const filter = {};
     
-    // Add city filter
-    if (city) {
-      filter['venue.city'] = new RegExp(city, 'i');
+    // Add general search filter (searches in title, artist names, venue name)
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      filter.$or = [
+        { title: searchRegex },
+        { 'performers.name': searchRegex },
+        { 'venue.name': searchRegex },
+        { 'venue.city': searchRegex }
+      ];
     }
     
-    // Add artist filter
-    if (artist) {
-      filter['performers.name'] = new RegExp(artist, 'i');
+    // Add specific city filter
+    if (city && city.trim()) {
+      filter['venue.city'] = new RegExp(city.trim(), 'i');
+    }
+    
+    // Add specific artist filter
+    if (artist && artist.trim()) {
+      filter['performers.name'] = new RegExp(artist.trim(), 'i');
     }
     
     // Add date range filter
@@ -351,9 +363,14 @@ app.get('/api/saved-events', async (req, res) => {
         filter.datetime_local.$gte = new Date(from_date);
       }
       if (to_date) {
-        filter.datetime_local.$lte = new Date(to_date);
+        // Set to end of day to include events on that date
+        const toDate = new Date(to_date);
+        toDate.setHours(23, 59, 59, 999);
+        filter.datetime_local.$lte = toDate;
       }
     }
+
+    console.log('Database filter being applied:', JSON.stringify(filter, null, 2));
 
     const skip = (page - 1) * limit;
     
@@ -363,6 +380,8 @@ app.get('/api/saved-events', async (req, res) => {
       .limit(Number(limit));
     
     const total = await Event.countDocuments(filter);
+    
+    console.log(`Found ${total} total events, returning ${events.length} for page ${page}`);
     
     res.json({
       events,
