@@ -41,6 +41,7 @@ const LandingPage = () => {
       const params = {
         page,
         per_page: pagination.limit,
+        save: 'true', // Ensure events are saved to the database
         ...filterParams
       }
 

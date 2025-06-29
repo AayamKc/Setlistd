@@ -1,9 +1,29 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import LoginModal from './LoginModal';
+import { eventsAPI } from '../utils/api';
 
 const ConcertModal = ({ isOpen, onClose, event }) => {
+  const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [existingReviews, setExistingReviews] = useState([]);
+
+  useEffect(() => {
+    if (isOpen && event && event._id) {
+      const fetchReviews = async () => {
+        try {
+          const response = await eventsAPI.getEventReviews(event._id);
+          setExistingReviews(response.data);
+        } catch (error) {
+          console.error('Error fetching reviews:', error);
+        }
+      };
+      fetchReviews();
+    }
+  }, [isOpen, event]);
 
   if (!isOpen) return null;
 
@@ -14,7 +34,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
         return image;
       }
     }
-    return '/placeholder-artist.jpg';
+    return '/Setlistd.png'; 
   };
 
   const isSeatGeekDefaultImage = (imageUrl) => {
@@ -28,11 +48,20 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
     return event.performers && event.performers.length > 0 ? event.performers[0].name : 'Unknown Artist';
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle review and rating submission logic here
-    console.log({ rating, review });
-    onClose();
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+    try {
+      await eventsAPI.submitReview(event._id, { rating, reviewText: review });
+      alert('Review submitted successfully!');
+      onClose();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Failed to submit review.');
+    }
   };
 
   return (
@@ -83,8 +112,28 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
               </button>
             </div>
           </form>
+
+          <div className="mt-8">
+            <h3 className="text-xl font-bold text-primary mb-4">Reviews</h3>
+            {existingReviews.length === 0 ? (
+              <p className="text-gray-400">No reviews yet. Be the first to leave one!</p>
+            ) : (
+              <div className="space-y-4">
+                {existingReviews.map((rev) => (
+                  <div key={rev._id} className="bg-gray-800 p-4 rounded-lg">
+                    <div className="flex items-center mb-2">
+                      <p className="font-semibold text-white">{rev.userId.username || 'Anonymous'}</p>
+                      <p className="ml-auto text-sm text-gray-400">Rating: {rev.rating}/5</p>
+                    </div>
+                    <p className="text-gray-300">{rev.reviewText}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </div>
   );
 };

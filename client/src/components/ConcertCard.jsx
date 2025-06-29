@@ -12,7 +12,7 @@ const ConcertCard = ({ event }) => {
         return image
       }
     }
-    return null // Return null to show our custom fallback
+    return null // Return null to show our cus1tom fallback
   }
 
   const isSeatGeekDefaultImage = (imageUrl) => {
@@ -117,7 +117,7 @@ const ConcertCard = ({ event }) => {
               {renderStars(event.averageRating || 0)}
             </div>
             <span className="ml-1 text-gray-400 text-xs">
-              {event.averageRating ? event.averageRating.toFixed(1) : '0'}
+              {event.averageRating ? event.averageRating.toFixed(1) : '0'} ({event.reviewCount || 0} reviews)
             </span>
           </div>
           {event.stats && event.stats.lowest_price && (
