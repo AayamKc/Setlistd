@@ -84,15 +84,12 @@ const ConcertCard = ({ event }) => {
           />
         ) : null}
         <div 
-          className={`w-full h-48 bg-gradient-to-br from-primary to-red-800 flex items-center justify-center ${getArtistImage() ? 'hidden' : 'flex'}`}
-          style={{ display: getArtistImage() ? 'none' : 'flex' }}
+          className={`w-full h-48 bg-cover bg-center flex items-center justify-center ${getArtistImage() ? 'hidden' : 'flex'}`}
+          style={{ 
+            display: getArtistImage() ? 'none' : 'flex',
+            backgroundImage: 'url(/Setlistd.png)'
+          }}
         >
-          <div className="text-center text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-2 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-            </svg>
-            <p className="text-sm font-medium opacity-80">Live Music</p>
-          </div>
         </div>
       </div>
       

@@ -187,7 +187,6 @@ const LandingPage = () => {
       <main className="container mx-auto px-4 py-6">
         <div className="text-center my-8">
           <h1 className="text-4xl font-bold text-primary mb-2"><TextRotator /></h1>
-          <p className="text-gray-400 text-lg">Discover concerts and share your live music experiences</p>
         </div>
 
         <div>
