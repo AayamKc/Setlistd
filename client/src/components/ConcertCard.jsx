@@ -70,13 +70,13 @@ const ConcertCard = ({ event }) => {
   }
 
   return (
-    <div className="block bg-secondary border border-primary rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-      <div className="relative">
+    <div className="block bg-secondary border border-primary rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer w-full max-w-sm mx-auto aspect-[4/5.5]">
+      <div className="relative h-3/5">
         {getArtistImage() ? (
           <img 
             src={getArtistImage()} 
             alt={getArtistName()}
-            className="w-full h-48 object-cover"
+            className="w-full h-full object-cover"
             onError={(e) => {
               e.target.style.display = 'none'
               e.target.nextElementSibling.style.display = 'flex'
@@ -84,7 +84,7 @@ const ConcertCard = ({ event }) => {
           />
         ) : null}
         <div 
-          className={`w-full h-48 bg-cover bg-center flex items-center justify-center ${getArtistImage() ? 'hidden' : 'flex'}`}
+          className={`w-full h-full bg-cover bg-center flex items-center justify-center ${getArtistImage() ? 'hidden' : 'flex'}`}
           style={{ 
             display: getArtistImage() ? 'none' : 'flex',
             backgroundImage: 'url(/Setlistd.png)'
@@ -93,33 +93,33 @@ const ConcertCard = ({ event }) => {
         </div>
       </div>
       
-      <div className="p-4">
-        <div className="mb-4">
-          <h3 className="text-xl font-bold text-primary">{getArtistName()}</h3>
-          <p className="text-gray-400">{getTourName()}</p>
+      <div className="p-4 h-2/5 flex flex-col justify-between">
+        <div className="mb-2">
+          <h3 className="text-lg font-bold text-primary truncate">{getArtistName()}</h3>
+          <p className="text-gray-400 text-sm truncate" title={getTourName()}>{getTourName()}</p>
         </div>
         
-        <div className="text-sm text-gray-400 mb-4">
-          <p>{event.venue?.name}</p>
+        <div className="text-xs text-gray-400 mb-2">
+          <p className="truncate">{event.venue?.name}</p>
           <p>{event.venue?.city}, {event.venue?.state}</p>
           <p>{formatDate(event.datetime_local)}</p>
         </div>
         
-        <div className="flex items-center mb-4">
-          <div className="flex">
-            {renderStars(event.averageRating || 0)}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="flex text-xs">
+              {renderStars(event.averageRating || 0)}
+            </div>
+            <span className="ml-1 text-gray-400 text-xs">
+              {event.averageRating ? event.averageRating.toFixed(1) : '0'}
+            </span>
           </div>
-          <span className="ml-2 text-gray-400 text-sm">
-            {event.averageRating ? event.averageRating.toFixed(1) : 'No ratings'} 
-            {event.reviewCount > 0 && ` (${event.reviewCount} reviews)`}
-          </span>
+          {event.stats && event.stats.lowest_price && (
+            <div className="text-sm font-bold text-primary">
+              ${event.stats.lowest_price}
+            </div>
+          )}
         </div>
-        
-        {event.stats && event.stats.lowest_price && (
-          <div className="text-lg font-bold text-primary">
-            <span>From ${event.stats.lowest_price}</span>
-          </div>
-        )}
       </div>
     </div>
   )
