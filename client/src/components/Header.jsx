@@ -61,7 +61,8 @@ const Header = ({ onSearch, onFilterChange }) => {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center">
             {/* Logo */}
-            <div className="logo">
+            <div className="logo flex items-center space-x-2">
+              <img src="/Setlistd.png" alt="Setlistd Logo" className="h-10 w-10" />
               <h1 className="text-3xl font-bold">Setlistd</h1>
             </div>
             

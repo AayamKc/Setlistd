@@ -186,17 +186,19 @@ const LandingPage = () => {
       />
       
       <main className="container mx-auto px-4 py-6">
-        <div className="relative text-center my-8">
-          <img 
-            src="/landingPAGE.webp" 
-            alt="Landing page illustration" 
-            className="w-full max-w-4xl mx-auto opacity-70 h-auto"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <h1 className="text-6xl font-bold text-primary mb-2"><TextRotator /></h1>
+        {searchQuery === '' && pagination.page === 1 && !Object.values(filters).some(value => value !== '') && (
+          <div className="relative text-center my-8">
+            <img 
+              src="/landingPAGE.webp" 
+              alt="Landing page illustration" 
+              className="w-full max-w-4xl mx-auto opacity-70 h-auto"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h1 className="text-6xl font-bold text-primary mb-2"><TextRotator /></h1>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Image credit: LE SSERAFIM / SOURCE MUSIC</p>
           </div>
-          <p className="text-xs text-gray-500 mt-2">Image credit: LE SSERAFIM / SOURCE MUSIC</p>
-        </div>
+        )}
 
         <div>
           {loading && (
