@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Header from './Header'
 import ConcertCard from './ConcertCard'
 import Footer from './Footer'
@@ -6,13 +7,18 @@ import TextRotator from './TextRotator'
 import { eventsAPI } from '../utils/api'
 
 const LandingPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({})
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
+  const [filters, setFilters] = useState({
+    city: searchParams.get('city') || '',
+    from_date: searchParams.get('from_date') || '',
+    to_date: searchParams.get('to_date') || ''
+  })
   const [pagination, setPagination] = useState({
-    page: 1,
+    page: parseInt(searchParams.get('page') || '1'),
     limit: 20,
     total: 0,
     pages: 0
@@ -78,13 +84,29 @@ const LandingPage = () => {
     }
   }, [pagination.limit])
 
+  // Update URL params when state changes
+  const updateURLParams = (newSearchQuery, newFilters, newPage) => {
+    const params = new URLSearchParams()
+    
+    if (newSearchQuery) params.set('search', newSearchQuery)
+    if (newFilters.city) params.set('city', newFilters.city)
+    if (newFilters.from_date) params.set('from_date', newFilters.from_date)
+    if (newFilters.to_date) params.set('to_date', newFilters.to_date)
+    if (newPage > 1) params.set('page', newPage.toString())
+    
+    setSearchParams(params)
+  }
+
   useEffect(() => {
-    fetchEvents()
+    // Fetch events based on initial URL params
+    const filterParams = mapFiltersToParams(filters)
+    fetchEvents(searchQuery, filterParams, pagination.page)
   }, [])
 
   const handleSearch = (query) => {
     setSearchQuery(query)
     setPagination(prev => ({ ...prev, page: 1 }))
+    updateURLParams(query, filters, 1)
     
     const filterParams = mapFiltersToParams(filters)
     fetchEvents(query, filterParams, 1)
@@ -94,6 +116,7 @@ const LandingPage = () => {
     console.log('Filter change received:', newFilters)
     setFilters(newFilters)
     setPagination(prev => ({ ...prev, page: 1 }))
+    updateURLParams(searchQuery, newFilters, 1)
     
     const filterParams = mapFiltersToParams(newFilters)
     console.log('Mapped filter params:', filterParams)
@@ -102,9 +125,22 @@ const LandingPage = () => {
 
   const handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, page: newPage }))
+    updateURLParams(searchQuery, filters, newPage)
     
     const filterParams = mapFiltersToParams(filters)
     fetchEvents(searchQuery, filterParams, newPage)
+  }
+
+  const handleLogoClick = () => {
+    setSearchQuery('')
+    setFilters({
+      city: '',
+      from_date: '',
+      to_date: ''
+    })
+    setPagination(prev => ({ ...prev, page: 1 }))
+    setSearchParams(new URLSearchParams())
+    fetchEvents('', {}, 1)
   }
 
   const renderPagination = () => {
@@ -183,6 +219,7 @@ const LandingPage = () => {
       <Header 
         onSearch={handleSearch}
         onFilterChange={handleFilterChange}
+        onLogoClick={handleLogoClick}
       />
       
       <main className="container mx-auto px-4 py-6">
