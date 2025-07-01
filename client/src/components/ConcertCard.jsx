@@ -30,29 +30,9 @@ const ConcertCard = ({ event }) => {
 
   const getArtistImage = () => {
     if (event.performers && event.performers.length > 0) {
-      const image = event.performers[0].image
-      
-      // Check if it's a SeatGeek default image and replace with our custom placeholder
-      if (image && !isSeatGeekDefaultImage(image)) {
-        return image
-      }
+      return event.performers[0].image || null
     }
-    return null // Return null to show our cus1tom fallback
-  }
-
-  const isSeatGeekDefaultImage = (imageUrl) => {
-    if (!imageUrl) return true
-    
-    // SeatGeek has exactly TWO types of image URLs:
-    // 1. DEFAULT/CARTOON: .../[slug]/[id]/huge.jpg (missing extra number)
-    // 2. REAL PHOTOS: .../[slug]/[id]/[extra_number]/huge.jpg (has extra number)
-    
-    // Check if URL matches the default pattern (no extra number before huge.jpg)
-    const isStandardPattern = /\/performers-landscape\/[^\/]+\/\d+\/huge\.jpg$/.test(imageUrl)
-    const hasExtraNumber = /\/performers-landscape\/[^\/]+\/\d+\/\d+\/huge\.jpg$/.test(imageUrl)
-    
-    // If it's the standard pattern WITHOUT the extra number, it's a default/cartoon
-    return isStandardPattern && !hasExtraNumber
+    return null
   }
 
   const getArtistName = () => {

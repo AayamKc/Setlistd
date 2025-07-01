@@ -1,9 +1,9 @@
 function ProfileTabs({ activeTab, onTabChange }) {
   const tabs = [
-    { id: 'attended', label: 'Attended', icon: '🎤' },
-    { id: 'wishlist', label: 'Wishlist', icon: '⭐' },
-    { id: 'favorites', label: 'Favorites', icon: '❤️' },
-    { id: 'posts', label: 'Posts', icon: '📝' }
+    { id: 'attended', label: 'Attended' },
+    { id: 'wishlist', label: 'Wishlist' },
+    { id: 'favorites', label: 'Favorites' },
+    { id: 'posts', label: 'Posts' }
   ]
 
   return (
@@ -19,7 +19,6 @@ function ProfileTabs({ activeTab, onTabChange }) {
                 : 'border-transparent text-gray-500 hover:text-gray-400'
             }`}
           >
-            <span className="mr-2">{tab.icon}</span>
             {tab.label}
           </button>
         ))}

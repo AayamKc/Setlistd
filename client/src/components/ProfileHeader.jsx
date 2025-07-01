@@ -1,13 +1,48 @@
 import { useState, useRef } from 'react'
 import api from '../utils/api'
 import EditProfileModal from './EditProfileModal'
+import CatalogModal from './CatalogModal'
 
 function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onProfileUpdate }) {
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showCatalogModal, setShowCatalogModal] = useState(false)
   const [uploadingProfile, setUploadingProfile] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const profileInputRef = useRef(null)
   const bannerInputRef = useRef(null)
+
+  const handleConcertSelect = async (concert, type) => {
+    try {
+      // Use seatgeekId for the endpoint
+      const concertId = concert.seatgeekId || concert._id
+      const endpoint = `/api/users/concerts/${type}/${concertId}`
+      await api.post(endpoint)
+      
+      // Update the profile with the new concert
+      const updatedProfile = { ...profile }
+      
+      if (type === 'attended') {
+        updatedProfile.attendedConcerts = [...(profile.attendedConcerts || []), concert]
+      } else if (type === 'wishlist') {
+        updatedProfile.wishlistConcerts = [...(profile.wishlistConcerts || []), concert]
+      } else if (type === 'favorites') {
+        updatedProfile.favoriteConcerts = [...(profile.favoriteConcerts || []), concert]
+      }
+      
+      onProfileUpdate(updatedProfile)
+      setShowCatalogModal(false)
+      
+      // Show success message
+      alert(`Concert added to ${type}!`)
+    } catch (error) {
+      console.error('Error adding concert:', error)
+      if (error.response?.status === 404) {
+        alert('Concert not found. It may need to be saved to the database first.')
+      } else {
+        alert('Failed to add concert. Please try again.')
+      }
+    }
+  }
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files?.[0]
@@ -243,12 +278,20 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
                 {/* Action Buttons */}
                 <div className="flex gap-2">
                   {isOwnProfile ? (
-                    <button
-                      onClick={() => setShowEditModal(true)}
-                      className="px-6 py-2 bg-gray-800 bg-opacity-70 text-primary rounded-lg hover:bg-opacity-90 transition"
-                    >
-                      Edit Profile
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setShowEditModal(true)}
+                        className="px-6 py-2 bg-gray-800 bg-opacity-70 text-primary rounded-lg hover:bg-opacity-90 transition"
+                      >
+                        Edit Profile
+                      </button>
+                      <button
+                        onClick={() => setShowCatalogModal(true)}
+                        className="px-6 py-2 bg-gray-800 bg-opacity-70 text-primary rounded-lg hover:bg-opacity-90 transition"
+                      >
+                        Catalog
+                      </button>
+                    </>
                   ) : (
                     <>
                       <button
@@ -275,6 +318,13 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
           profile={profile}
           onClose={() => setShowEditModal(false)}
           onUpdate={onProfileUpdate}
+        />
+      )}
+      
+      {showCatalogModal && (
+        <CatalogModal
+          onClose={() => setShowCatalogModal(false)}
+          onConcertSelect={handleConcertSelect}
         />
       )}
     </div>

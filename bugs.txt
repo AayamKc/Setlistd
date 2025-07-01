@@ -6,7 +6,23 @@ Status: ACTIVE
 
 CURRENT BUGS
 -----------
-(None reported yet - will be updated as bugs are discovered)
+
+Bug ID: B-001
+Date Discovered: 2025-07-01
+Severity: Critical
+Component: Backend/Storage
+Description: Profile picture and banner uploads not working
+Steps to Reproduce:
+1. Navigate to user profile
+2. Click camera icon on profile picture or banner
+3. Select an image file
+4. Upload appears to process but fails
+Expected Behavior: Image should upload and display immediately
+Actual Behavior: Upload fails, no image is saved
+Error Messages: Likely 404 errors for missing Supabase storage buckets
+Possible Cause: Supabase storage buckets (profile-pictures, banner-images) not created
+Status: Open
+Fix Suggestion: Create required Supabase storage buckets as documented in supabase-storage-setup.md
 
 BUG TEMPLATE
 -----------
@@ -36,6 +52,32 @@ CATEGORIES
 - Mobile Responsiveness
 - API Errors
 - State Management Bugs
+
+FIXED ISSUES
+-----------
+- Catalog button now visible with matching style to Edit Profile button
+- Catalog button positioned below Edit Profile button
+- Catalog modal now properly loads concerts from SeatGeek API
+- Concert data transformation fixed to handle SeatGeek response format
+- Removed overly aggressive image filtering that was replacing valid concert photos with setlistd.png
+  - Removed isSeatGeekDefaultImage function from ConcertCard.jsx
+  - Removed isSeatGeekDefaultImage function from ConcertModal.jsx
+  - Now all SeatGeek images will display, only falling back to setlistd.png when no image exists
+- Updated CatalogModal color scheme to match app theme
+  - Toggle buttons now use bg-primary (lavender) when active with text-secondary
+  - Inactive buttons use gray with hover effect showing primary color
+  - Concert card hover ring uses primary color
+  - Loading spinner uses primary color
+
+POTENTIAL IMPROVEMENTS
+---------------------
+- Add ability to remove concerts from attended/wishlist/favorites lists
+- Show visual indicator on concert cards if already added to a list
+- Implement toast notifications instead of browser alerts
+- Add loading states when adding concerts to lists
+- Consider pagination instead of infinite scroll for better performance
+- Add concert filtering by date range or location
+- Save concerts to database before adding to user lists (currently using seatgeekId)
 
 NOTES
 -----

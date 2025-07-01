@@ -44,20 +44,10 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   if (!isOpen) return null;
 
   const getArtistImage = () => {
-    if (event.performers && event.performers.length > 0) {
-      const image = event.performers[0].image;
-      if (image && !isSeatGeekDefaultImage(image)) {
-        return image;
-      }
+    if (event.performers && event.performers.length > 0 && event.performers[0].image) {
+      return event.performers[0].image;
     }
     return '/Setlistd.png'; 
-  };
-
-  const isSeatGeekDefaultImage = (imageUrl) => {
-    if (!imageUrl) return true;
-    const isStandardPattern = /\/performers-landscape\/[^\/]+\/\d+\/huge\.jpg$/.test(imageUrl);
-    const hasExtraNumber = /\/performers-landscape\/[^\/]+\/\d+\/\d+\/huge\.jpg$/.test(imageUrl);
-    return isStandardPattern && !hasExtraNumber;
   };
 
   const getArtistName = () => {
