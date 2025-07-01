@@ -7,6 +7,7 @@ const Event = require('./models/Event');
 const supabase = require('./config/supabase'); // Supabase client
 const { protect } = require('./middleware/authMiddleware'); // Auth middleware
 const reviewRoutes = require('./routes/reviewRoutes');
+const artistRoutes = require('./routes/artistRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -32,6 +33,9 @@ app.use(express.json());
 
 // Review Routes
 app.use('/api/events', reviewRoutes);
+
+// Artist Routes
+app.use('/api/artists', artistRoutes);
 
 // User Registration
 app.post('/auth/signup', async (req, res) => {
@@ -315,6 +319,7 @@ app.get('/api/saved-events', async (req, res) => {
     const { 
       page = 1, 
       limit = 20, 
+      city,
       from_date, 
       to_date 
     } = req.query;

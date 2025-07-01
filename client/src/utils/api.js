@@ -30,6 +30,7 @@ export const eventsAPI = {
   searchEvents: (params) => api.get('/api/events', { params }),
   getEventReviews: (eventId) => api.get(`/api/events/${eventId}/reviews`),
   submitReview: (eventId, data) => api.post(`/api/events/${eventId}/reviews`, data),
+  getArtistRating: (artistName) => api.get(`/api/artists/${encodeURIComponent(artistName)}/rating`),
 }
 
 export default api

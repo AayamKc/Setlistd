@@ -12,9 +12,15 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
+  // Get today's date in YYYY-MM-DD format for filtering upcoming concerts
+  const getTodayDate = () => {
+    const today = new Date()
+    return today.toISOString().split('T')[0]
+  }
+
   const [filters, setFilters] = useState({
     city: searchParams.get('city') || '',
-    from_date: searchParams.get('from_date') || '',
+    from_date: searchParams.get('from_date') || getTodayDate(),
     to_date: searchParams.get('to_date') || ''
   })
   const [pagination, setPagination] = useState({
@@ -133,14 +139,15 @@ const LandingPage = () => {
 
   const handleLogoClick = () => {
     setSearchQuery('')
-    setFilters({
+    const defaultFilters = {
       city: '',
-      from_date: '',
+      from_date: getTodayDate(),
       to_date: ''
-    })
+    }
+    setFilters(defaultFilters)
     setPagination(prev => ({ ...prev, page: 1 }))
     setSearchParams(new URLSearchParams())
-    fetchEvents('', {}, 1)
+    fetchEvents('', mapFiltersToParams(defaultFilters), 1)
   }
 
   const renderPagination = () => {
@@ -157,7 +164,7 @@ const LandingPage = () => {
 
     if (startPage > 1) {
       pages.push(
-        <button key={1} onClick={() => handlePageChange(1)} className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-pink-700">
+        <button key={1} onClick={() => handlePageChange(1)} className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-primary-dark">
           1
         </button>
       )
@@ -171,7 +178,7 @@ const LandingPage = () => {
         <button 
           key={i} 
           onClick={() => handlePageChange(i)}
-          className={`px-4 py-2 rounded mx-1 ${pagination.page === i ? 'bg-pink-700 text-white' : 'bg-primary text-secondary hover:bg-pink-700'}`}
+          className={`px-4 py-2 rounded mx-1 ${pagination.page === i ? 'bg-primary-dark text-secondary' : 'bg-primary text-secondary hover:bg-primary-dark'}`}
         >
           {i}
         </button>
@@ -186,7 +193,7 @@ const LandingPage = () => {
         <button 
           key={pagination.pages} 
           onClick={() => handlePageChange(pagination.pages)}
-          className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-pink-700"
+          className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-primary-dark"
         >
           {pagination.pages}
         </button>
@@ -198,7 +205,7 @@ const LandingPage = () => {
         <button 
           onClick={() => handlePageChange(pagination.page - 1)}
           disabled={pagination.page === 1}
-          className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-pink-700 disabled:opacity-50"
+          className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-primary-dark disabled:opacity-50"
         >
           Previous
         </button>
@@ -206,7 +213,7 @@ const LandingPage = () => {
         <button 
           onClick={() => handlePageChange(pagination.page + 1)}
           disabled={pagination.page === pagination.pages}
-          className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-pink-700 disabled:opacity-50"
+          className="bg-primary text-secondary px-4 py-2 rounded mx-1 hover:bg-primary-dark disabled:opacity-50"
         >
           Next
         </button>
@@ -220,10 +227,11 @@ const LandingPage = () => {
         onSearch={handleSearch}
         onFilterChange={handleFilterChange}
         onLogoClick={handleLogoClick}
+        initialFilters={filters}
       />
       
       <main className="container mx-auto px-4 py-6">
-        {searchQuery === '' && pagination.page === 1 && !Object.values(filters).some(value => value !== '') && (
+        {searchQuery === '' && pagination.page === 1 && filters.city === '' && filters.to_date === '' && (
           <div className="relative text-center my-8">
             <img 
               src="/landingPAGE.webp" 
@@ -250,7 +258,7 @@ const LandingPage = () => {
               <button onClick={() => {
                 const filterParams = mapFiltersToParams(filters)
                 fetchEvents(searchQuery, filterParams, pagination.page)
-              }} className="bg-primary text-secondary px-4 py-2 rounded mt-4 hover:bg-pink-700">
+              }} className="bg-primary text-secondary px-4 py-2 rounded mt-4 hover:bg-primary-dark">
                 Try Again
               </button>
             </div>

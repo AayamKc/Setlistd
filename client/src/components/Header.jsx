@@ -4,16 +4,16 @@ import { supabase } from '../utils/supabase'
 import LoginModal from './LoginModal'
 import FilterModal from './FilterModal'
 
-const Header = ({ onSearch, onFilterChange, onLogoClick }) => {
+const Header = ({ onSearch, onFilterChange, onLogoClick, initialFilters = {} }) => {
   const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [modalMode, setModalMode] = useState('login')
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [filters, setFilters] = useState({
-    city: '',
-    from_date: '',
-    to_date: ''
+    city: initialFilters.city || '',
+    from_date: initialFilters.from_date || '',
+    to_date: initialFilters.to_date || ''
   })
 
   const handleLogout = async () => {

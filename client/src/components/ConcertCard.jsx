@@ -1,8 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ConcertModal from './ConcertModal';
+import { eventsAPI } from '../utils/api';
 
 const ConcertCard = ({ event }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [artistRating, setArtistRating] = useState(null);
+  const [loadingArtistRating, setLoadingArtistRating] = useState(true);
+
+  useEffect(() => {
+    const fetchArtistRating = async () => {
+      if (event.performers && event.performers.length > 0) {
+        try {
+          const artistName = event.performers[0].name;
+          const response = await eventsAPI.getArtistRating(artistName);
+          setArtistRating(response.data);
+        } catch (error) {
+          console.error('Error fetching artist rating:', error);
+          setArtistRating({ hasReviews: false });
+        } finally {
+          setLoadingArtistRating(false);
+        }
+      } else {
+        setLoadingArtistRating(false);
+      }
+    };
+
+    fetchArtistRating();
+  }, [event]);
+
   const getArtistImage = () => {
     if (event.performers && event.performers.length > 0) {
       const image = event.performers[0].image
@@ -71,6 +96,27 @@ const ConcertCard = ({ event }) => {
     return stars
   }
 
+  const renderArtistRating = () => {
+    if (loadingArtistRating) {
+      return <span className="text-xs text-gray-400">Loading...</span>
+    }
+
+    if (!artistRating || !artistRating.hasReviews) {
+      return <span className="text-xs text-gray-400">No reviews</span>
+    }
+
+    return (
+      <div className="flex items-center">
+        <div className="flex text-xs">
+          {renderStars(artistRating.averageRating)}
+        </div>
+        <span className="ml-1 text-gray-400 text-xs">
+          {artistRating.averageRating.toFixed(1)} ({artistRating.totalReviews})
+        </span>
+      </div>
+    )
+  }
+
   return (
     <>
       <div 
@@ -108,7 +154,10 @@ const ConcertCard = ({ event }) => {
         <div className="text-xs text-gray-400 mb-2">
           <p className="truncate">{event.venue?.name}</p>
           <p>{event.venue?.city}, {event.venue?.state}</p>
-          <p>{formatDate(event.datetime_local)}</p>
+          <div className="flex justify-between items-center">
+            <p>{formatDate(event.datetime_local)}</p>
+            {renderArtistRating()}
+          </div>
         </div>
         
         <div className="flex items-center justify-between">
@@ -117,7 +166,7 @@ const ConcertCard = ({ event }) => {
               {renderStars(event.averageRating || 0)}
             </div>
             <span className="ml-1 text-gray-400 text-xs">
-              {event.averageRating ? event.averageRating.toFixed(1) : '0'} ({event.reviewCount || 0} reviews)
+              {event.averageRating ? event.averageRating.toFixed(1) : '0'} ({event.reviewCount || 0})
             </span>
           </div>
           {event.stats && event.stats.lowest_price && (

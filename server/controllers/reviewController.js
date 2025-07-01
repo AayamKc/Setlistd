@@ -68,3 +68,55 @@ exports.getEventReviews = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+// @desc    Get artist rating aggregated across all their events
+// @route   GET /api/artists/:artistName/rating
+// @access  Public
+exports.getArtistRating = async (req, res) => {
+  try {
+    const { artistName } = req.params;
+    
+    // Find all events where this artist is a performer
+    const events = await Event.find({ 
+      'performers.name': { $regex: new RegExp(artistName, 'i') } 
+    });
+    
+    if (events.length === 0) {
+      return res.json({ 
+        artistName,
+        averageRating: 0,
+        totalReviews: 0,
+        hasReviews: false
+      });
+    }
+    
+    // Get all event IDs for this artist
+    const eventIds = events.map(event => event.seatgeekId);
+    
+    // Get all reviews for these events
+    const reviews = await Review.find({ eventId: { $in: eventIds } });
+    
+    if (reviews.length === 0) {
+      return res.json({ 
+        artistName,
+        averageRating: 0,
+        totalReviews: 0,
+        hasReviews: false
+      });
+    }
+    
+    // Calculate average rating
+    const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
+    const averageRating = totalRating / reviews.length;
+    
+    res.json({
+      artistName,
+      averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+      totalReviews: reviews.length,
+      hasReviews: true
+    });
+  } catch (error) {
+    console.error('Get artist rating error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
