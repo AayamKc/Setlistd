@@ -79,18 +79,19 @@ const ConcertCard = ({ event }) => {
     const stars = []
     const fullStars = Math.floor(rating)
     const hasHalfStar = rating % 1 !== 0
+    const eventId = event._id || event.seatgeekId || 'unknown'
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(<span key={i} className="text-primary">★</span>)
+      stars.push(<span key={`${eventId}-star-${i}`} className="text-primary">★</span>)
     }
 
     if (hasHalfStar) {
-      stars.push(<span key="half" className="text-primary">★</span>)
+      stars.push(<span key={`${eventId}-half`} className="text-primary">★</span>)
     }
 
     const emptyStars = 5 - Math.ceil(rating)
     for (let i = 0; i < emptyStars; i++) {
-      stars.push(<span key={`empty-${i}`} className="text-gray-400">☆</span>)
+      stars.push(<span key={`${eventId}-empty-${i}`} className="text-gray-400">☆</span>)
     }
 
     return stars

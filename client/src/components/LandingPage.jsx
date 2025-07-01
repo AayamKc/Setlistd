@@ -209,7 +209,7 @@ const LandingPage = () => {
         >
           Previous
         </button>
-        {pages}
+        {...pages}
         <button 
           onClick={() => handlePageChange(pagination.page + 1)}
           disabled={pagination.page === pagination.pages}
@@ -274,8 +274,8 @@ const LandingPage = () => {
           {!loading && !error && events.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                {events.map((event) => (
-                  <ConcertCard key={event._id || event.seatgeekId} event={event} />
+                {events.map((event, index) => (
+                  <ConcertCard key={event._id || event.seatgeekId || event.id || `event-${index}`} event={event} />
                 ))}
               </div>
               
