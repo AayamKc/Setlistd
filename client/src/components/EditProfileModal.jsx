@@ -77,7 +77,7 @@ function EditProfileModal({ profile, onClose, onUpdate }) {
                 onChange={handleChange}
                 maxLength={500}
                 rows={4}
-                className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                 placeholder="Tell us about yourself..."
               />
               <div className="text-right text-sm text-gray-500 mt-1">
@@ -94,7 +94,7 @@ function EditProfileModal({ profile, onClose, onUpdate }) {
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="City, State"
               />
             </div>
@@ -111,7 +111,7 @@ function EditProfileModal({ profile, onClose, onUpdate }) {
                   name="social.instagram"
                   value={formData.socialLinks.instagram}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="username"
                 />
               </div>
@@ -125,7 +125,7 @@ function EditProfileModal({ profile, onClose, onUpdate }) {
                   name="social.twitter"
                   value={formData.socialLinks.twitter}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="username"
                 />
               </div>
@@ -139,7 +139,7 @@ function EditProfileModal({ profile, onClose, onUpdate }) {
                   name="social.spotify"
                   value={formData.socialLinks.spotify}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 bg-gray-800 text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="username"
                 />
               </div>
@@ -152,7 +152,7 @@ function EditProfileModal({ profile, onClose, onUpdate }) {
                   name="isPrivate"
                   checked={formData.isPrivate}
                   onChange={handleChange}
-                  className="mr-2 w-4 h-4 text-accent bg-gray-800 rounded focus:ring-accent"
+                  className="mr-2 w-4 h-4 text-primary bg-gray-800 rounded focus:ring-primary"
                 />
                 <span className="text-sm text-gray-400">Private Profile</span>
               </label>
@@ -170,7 +170,7 @@ function EditProfileModal({ profile, onClose, onUpdate }) {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 px-4 py-2 bg-accent text-secondary rounded-lg hover:bg-opacity-90 transition disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-primary text-black rounded-lg hover:bg-primary-dark transition disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
