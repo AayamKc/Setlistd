@@ -12,6 +12,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [existingReviews, setExistingReviews] = useState([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen && event && event.id) {
@@ -56,6 +57,15 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       setShowLoginModal(true);
       return;
     }
+    
+    // Validate rating
+    if (rating === 0) {
+      alert('Please select a rating');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
     try {
       await eventsAPI.submitReview(event.id, { rating, reviewText: review });
       
@@ -73,21 +83,34 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       setRating(0);
       setReview('');
       
-      // Hide success message after 3 seconds
+      // Hide success message after 3 seconds and refresh the page
       setTimeout(() => {
         setShowSuccessMessage(false);
         onClose();
+        // Refresh the page to update ratings
+        window.location.reload();
       }, 3000);
       
     } catch (error) {
       console.error('Error submitting review:', error);
       alert('Failed to submit review.');
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black bg-opacity-75 backdrop-blur-sm" onClick={onClose} />
+      
+      {/* Loading Overlay */}
+      {isSubmitting && (
+        <div className="absolute inset-0 flex items-center justify-center z-60 bg-black bg-opacity-50">
+          <div className="bg-gray-800 text-white px-8 py-6 rounded-lg shadow-2xl text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <div className="text-lg font-semibold">Submitting Review...</div>
+          </div>
+        </div>
+      )}
       
       {/* Success Message Overlay */}
       {showSuccessMessage && (
