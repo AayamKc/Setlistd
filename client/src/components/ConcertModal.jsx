@@ -18,6 +18,14 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   const [editingText, setEditingText] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [hoveredReviewId, setHoveredReviewId] = useState(null);
+  
+  // Check if concert has already happened
+  const isEventInPast = () => {
+    if (!event || !event.datetime_local) return false;
+    const eventDate = new Date(event.datetime_local);
+    const currentDate = new Date();
+    return eventDate <= currentDate;
+  };
 
   useEffect(() => {
     if (isOpen && event && event.id) {
@@ -205,6 +213,12 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
         </div>
         <div className="p-6">
           <img src={getArtistImage()} alt={getArtistName()} className="w-full h-64 object-cover rounded-lg mb-6" />
+          {!isEventInPast() && (
+            <div className="bg-yellow-200 bg-opacity-20 border border-yellow-300 text-yellow-200 px-4 py-3 rounded-lg mb-6">
+              <p className="text-sm font-semibold">This concert has not happened yet.</p>
+              <p className="text-sm">Reviews can only be submitted after the concert has taken place.</p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="text-lg font-semibold text-white block mb-2">Your Rating</label>
@@ -212,8 +226,8 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg
                     key={star}
-                    onClick={() => setRating(star)}
-                    className={`h-8 w-8 cursor-pointer ${rating >= star ? 'text-primary' : 'text-gray-600'}`}
+                    onClick={() => isEventInPast() && setRating(star)}
+                    className={`h-8 w-8 ${isEventInPast() ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'} ${rating >= star ? 'text-primary' : 'text-gray-600'}`}
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -229,12 +243,17 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
                 rows="4"
                 value={review}
                 onChange={(e) => setReview(e.target.value)}
-                className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="What did you think of the show?"
+                disabled={!isEventInPast()}
               />
             </div>
             <div className="flex justify-end">
-              <button type="submit" className="py-3 px-6 bg-primary text-black rounded-lg hover:bg-primary-dark transition-colors font-semibold">
+              <button 
+                type="submit" 
+                className="py-3 px-6 bg-primary text-black rounded-lg hover:bg-primary-dark transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
+                disabled={!isEventInPast()}
+              >
                 Submit Review
               </button>
             </div>

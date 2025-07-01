@@ -23,6 +23,14 @@ exports.createReview = async (req, res) => {
       return res.status(404).json({ message: 'Event not found. Please ensure the event is saved to our database first.' });
     }
 
+    // Check if the event has already happened
+    const currentDate = new Date();
+    const eventDate = new Date(event.datetime_local);
+    
+    if (eventDate > currentDate) {
+      return res.status(400).json({ message: 'You cannot review a concert that has not happened yet.' });
+    }
+
     // Check if user has already reviewed this event (using SeatGeek ID)
     const alreadyReviewed = await Review.findOne({ eventId: seatgeekEventId, userId });
 
