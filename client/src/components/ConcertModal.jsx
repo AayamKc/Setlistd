@@ -65,6 +65,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
     }
     
     setIsSubmitting(true);
+    console.log('Submitting review, isSubmitting:', true);
     
     try {
       await eventsAPI.submitReview(event.id, { rating, reviewText: review });
@@ -104,8 +105,8 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       
       {/* Loading Overlay */}
       {isSubmitting && (
-        <div className="absolute inset-0 flex items-center justify-center z-60 bg-black bg-opacity-50">
-          <div className="bg-gray-800 text-white px-8 py-6 rounded-lg shadow-2xl text-center">
+        <div className="absolute inset-0 flex items-center justify-center z-[70] bg-black bg-opacity-50">
+          <div className="bg-gray-800 text-white px-8 py-6 rounded-lg shadow-2xl text-center z-[80]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <div className="text-lg font-semibold">Submitting Review...</div>
           </div>
