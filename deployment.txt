@@ -10,6 +10,9 @@ PREREQUISITES
 2. MongoDB Atlas account (or existing MongoDB connection string)
 3. Supabase project already set up
 4. Cloudinary account for image uploads
+5. Create a deployment-test branch for production deployments:
+   git checkout -b deployment-test
+   git push origin deployment-test
 
 PART 1: BACKEND DEPLOYMENT (Render)
 ===================================
@@ -47,7 +50,7 @@ Step 2: Deploy to Render
 4. Configure the service:
    - Name: setlistd-backend (or your preferred name)
    - Region: Choose closest to your users
-   - Branch: main (or your default branch)
+   - Branch: deployment-test
    - Root Directory: server
    - Runtime: Node
    - Build Command: npm install
@@ -92,6 +95,7 @@ Step 2: Deploy to Vercel
    - Root Directory: client (IMPORTANT: Click "Edit" and change to "client")
    - Build Command: npm run build
    - Output Directory: dist
+   - Production Branch: deployment-test (IMPORTANT: Change from 'main' to 'deployment-test')
 
 5. Add Environment Variables:
    - VITE_API_BASE_URL = https://your-app-name.onrender.com
@@ -143,19 +147,62 @@ Step 3: Test Everything
 4. Test image uploads
 5. Check browser console for any CORS errors
 
-PART 5: CONTINUOUS DEPLOYMENT
-=============================
+PART 5: BRANCH-BASED DEPLOYMENT WORKFLOW
+========================================
 
-Both platforms are now configured for automatic deployment:
+IMPORTANT: You're using deployment-test branch for production deployments.
 
-1. Frontend (Vercel): Automatically deploys when you push to your main branch
-2. Backend (Render): Automatically deploys when you push to your main branch
+How the deployment works:
+1. Frontend (Vercel): Automatically deploys when you push to deployment-test branch
+2. Backend (Render): Automatically deploys when you push to deployment-test branch
+3. Other branches (like UserPage, main) create preview deployments only
 
-To make changes:
-1. Make your code changes locally
+Development Workflow:
+---------------------
+1. Work on your feature branches (UserPage, main, etc.)
 2. Test locally
-3. Commit and push to GitHub
-4. Both frontend and backend will automatically redeploy
+3. Push to GitHub (creates preview deployments with unique URLs)
+4. Test preview deployments before merging to production
+
+Production Deployment Workflow:
+-------------------------------
+When ready to deploy to production:
+```bash
+# Ensure deployment-test is up to date
+git checkout deployment-test
+git pull origin deployment-test
+
+# Merge your feature branch
+git merge UserPage  # or whatever branch you want to deploy
+
+# Push to trigger production deployment
+git push origin deployment-test
+```
+
+This triggers:
+- Vercel production deployment at your main URL
+- Render production deployment
+- Both use production environment variables
+
+Preview Deployments:
+--------------------
+- Push to any non-deployment-test branch creates preview deployments
+- Vercel preview URLs: your-app-git-branchname.vercel.app
+- Each PR gets its own preview URL
+- Preview deployments use the same env vars as production
+
+Rollback Strategy:
+------------------
+If something goes wrong in production:
+```bash
+git checkout deployment-test
+git reset --hard HEAD~1  # Go back one commit
+git push --force origin deployment-test
+```
+
+Or use platform-specific rollback:
+- Vercel: Dashboard → Deployments → Redeploy previous
+- Render: Dashboard → Events → Rollback
 
 TROUBLESHOOTING
 ===============
@@ -235,10 +282,11 @@ Before going live:
 NEXT STEPS
 ==========
 
-1. Deploy backend first, get the URL
-2. Deploy frontend with backend URL
-3. Update Supabase settings
-4. Test everything thoroughly
-5. Share your app URL!
+1. Create and push deployment-test branch if not already done
+2. Deploy backend first (using deployment-test branch), get the URL
+3. Deploy frontend (using deployment-test branch) with backend URL
+4. Update Supabase settings with production URLs
+5. Test everything thoroughly on production
+6. Continue development on feature branches, deploy by merging to deployment-test
 
-For updates, just push to GitHub and both services will auto-deploy within minutes.
+Remember: Only deployment-test branch deploys to production. All other branches create preview deployments for testing.
