@@ -30,6 +30,8 @@ export const eventsAPI = {
   searchEvents: (params) => api.get('/api/events', { params }),
   getEventReviews: (eventId) => api.get(`/api/events/${eventId}/reviews`),
   submitReview: (eventId, data) => api.post(`/api/events/${eventId}/reviews`, data),
+  updateReview: (eventId, reviewId, data) => api.put(`/api/events/${eventId}/reviews/${reviewId}`, data),
+  deleteReview: (eventId, reviewId) => api.delete(`/api/events/${eventId}/reviews/${reviewId}`),
   getArtistRating: (artistName) => api.get(`/api/artists/${encodeURIComponent(artistName)}/rating`),
 }
 

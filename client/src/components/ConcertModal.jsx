@@ -13,6 +13,11 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   const [existingReviews, setExistingReviews] = useState([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [editingRating, setEditingRating] = useState(0);
+  const [editingText, setEditingText] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [hoveredReviewId, setHoveredReviewId] = useState(null);
 
   useEffect(() => {
     if (isOpen && event && event.id) {
@@ -99,6 +104,72 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
     }
   };
 
+  const handleEditReview = (review) => {
+    setEditingReviewId(review._id);
+    setEditingRating(review.rating);
+    setEditingText(review.reviewText);
+  };
+
+  const handleUpdateReview = async (reviewId) => {
+    if (editingRating === 0) {
+      alert('Please select a rating');
+      return;
+    }
+
+    try {
+      console.log('Updating review:', { eventId: event.id, reviewId, rating: editingRating });
+      await eventsAPI.updateReview(event.id, reviewId, {
+        rating: editingRating,
+        reviewText: editingText
+      });
+      
+      // Refresh reviews
+      const response = await eventsAPI.getEventReviews(event.id);
+      setExistingReviews(response.data);
+      
+      // Clear editing state
+      setEditingReviewId(null);
+      setEditingRating(0);
+      setEditingText('');
+      
+      // Refresh page to update ratings
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch (error) {
+      console.error('Error updating review:', error);
+      alert('Failed to update review.');
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      console.log('Deleting review:', { eventId: event.id, reviewId });
+      await eventsAPI.deleteReview(event.id, reviewId);
+      
+      // Refresh reviews
+      const response = await eventsAPI.getEventReviews(event.id);
+      setExistingReviews(response.data);
+      
+      // Close confirmation dialog
+      setShowDeleteConfirm(null);
+      
+      // Refresh page to update ratings
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      alert('Failed to delete review.');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingReviewId(null);
+    setEditingRating(0);
+    setEditingText('');
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black bg-opacity-75 backdrop-blur-sm" onClick={onClose} />
@@ -176,12 +247,87 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
             ) : (
               <div className="space-y-4">
                 {existingReviews.map((rev) => (
-                  <div key={rev._id} className="bg-gray-800 p-4 rounded-lg">
-                    <div className="flex items-center mb-2">
-                      <p className="font-semibold text-white">{rev.username || 'Anonymous User'}</p>
-                      <p className="ml-auto text-sm text-gray-400">Rating: {rev.rating}/5</p>
-                    </div>
-                    <p className="text-gray-300">{rev.reviewText}</p>
+                  <div 
+                    key={rev._id} 
+                    className="bg-gray-800 p-4 rounded-lg relative"
+                    onMouseEnter={() => setHoveredReviewId(rev._id)}
+                    onMouseLeave={() => setHoveredReviewId(null)}
+                  >
+                    {editingReviewId === rev._id ? (
+                      // Edit mode
+                      <div>
+                        <div className="flex items-center mb-4">
+                          <p className="font-semibold text-white">{rev.username || 'Anonymous User'}</p>
+                          <div className="ml-auto flex gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setEditingRating(star)}
+                                className={`text-2xl ${editingRating >= star ? 'text-primary' : 'text-gray-600'}`}
+                              >
+                                ★
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <textarea
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          className="w-full p-3 bg-gray-700 text-white rounded-lg resize-none"
+                          rows="3"
+                          placeholder="Share your thoughts..."
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => handleUpdateReview(rev._id)}
+                            className="px-4 py-2 bg-primary text-black rounded-lg hover:bg-primary-dark transition-colors"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // View mode
+                      <>
+                        <div className="flex items-center mb-2">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-white">{rev.username || 'Anonymous User'}</p>
+                            {/* Edit/Delete buttons - show on hover if user owns the review */}
+                            {user && rev.userId === user.id && hoveredReviewId === rev._id && (
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => handleEditReview(rev)}
+                                  className="p-1 text-gray-400 hover:text-white transition-colors"
+                                  title="Edit review"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => setShowDeleteConfirm(rev._id)}
+                                  className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                  title="Delete review"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          <p className="ml-auto text-sm text-gray-400">Rating: {rev.rating}/5</p>
+                        </div>
+                        <p className="text-gray-300">{rev.reviewText}</p>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
@@ -190,6 +336,31 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
         </div>
       </div>
       {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowDeleteConfirm(null)} />
+          <div className="relative bg-gray-900 p-6 rounded-xl max-w-md mx-4">
+            <h3 className="text-xl font-bold text-white mb-4">Delete Review</h3>
+            <p className="text-gray-300 mb-6">Are you sure you want to delete your review? This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleDeleteReview(showDeleteConfirm)}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
