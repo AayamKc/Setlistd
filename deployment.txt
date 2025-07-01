@@ -1,0 +1,244 @@
+COMPREHENSIVE DEPLOYMENT GUIDE FOR SETLISTD
+==========================================
+
+This guide will help you deploy your Setlistd app with continuous deployment capabilities.
+You'll deploy the frontend to Vercel and the backend to Render, both with auto-deploy on git push.
+
+PREREQUISITES
+=============
+1. GitHub account with your code pushed to a repository
+2. MongoDB Atlas account (or existing MongoDB connection string)
+3. Supabase project already set up
+4. Cloudinary account for image uploads
+
+PART 1: BACKEND DEPLOYMENT (Render)
+===================================
+
+Step 1: Prepare Backend Code
+----------------------------
+1. Update server/server.js CORS configuration to include production URLs:
+
+   // In server/server.js, update the CORS configuration:
+   app.use(cors({
+     origin: [
+       'http://localhost:5173',
+       'http://localhost:5174',
+       'https://your-frontend-name.vercel.app',  // Add this line
+       process.env.FRONTEND_URL                   // Add this for flexibility
+     ],
+     credentials: true,
+     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allowedHeaders: ['Content-Type', 'Authorization']
+   }));
+
+2. Ensure your MongoDB connection uses environment variable:
+   - Check that server/config/database.js uses process.env.MONGODB_URI
+
+3. Add a health check endpoint in server/server.js (if not exists):
+   app.get('/health', (req, res) => {
+     res.status(200).json({ status: 'OK', message: 'Server is running' });
+   });
+
+Step 2: Deploy to Render
+------------------------
+1. Go to https://render.com and sign up/login
+2. Click "New +" → "Web Service"
+3. Connect your GitHub account and select your repository
+4. Configure the service:
+   - Name: setlistd-backend (or your preferred name)
+   - Region: Choose closest to your users
+   - Branch: main (or your default branch)
+   - Root Directory: server
+   - Runtime: Node
+   - Build Command: npm install
+   - Start Command: npm start
+
+5. Set Environment Variables in Render dashboard:
+   - NODE_ENV = production
+   - PORT = 3000
+   - MONGODB_URI = your_mongodb_connection_string
+   - SUPABASE_URL = your_supabase_project_url
+   - SUPABASE_ANON_KEY = your_supabase_anon_key
+   - CLOUDINARY_CLOUD_NAME = your_cloudinary_cloud_name
+   - CLOUDINARY_API_KEY = your_cloudinary_api_key
+   - CLOUDINARY_API_SECRET = your_cloudinary_api_secret
+   - FRONTEND_URL = https://your-frontend-name.vercel.app (update after frontend deployment)
+
+6. Click "Create Web Service"
+7. Wait for deployment (takes 5-10 minutes)
+8. Note your backend URL: https://your-app-name.onrender.com
+
+PART 2: FRONTEND DEPLOYMENT (Vercel)
+====================================
+
+Step 1: Prepare Frontend Code
+-----------------------------
+1. Update client/.env.production file:
+   VITE_API_BASE_URL=https://your-app-name.onrender.com
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+2. Ensure API calls use the environment variable (already done in utils/api.js)
+
+3. The vercel.json file is already created with proper configuration
+
+Step 2: Deploy to Vercel
+------------------------
+1. Go to https://vercel.com and sign up/login with GitHub
+2. Click "Add New..." → "Project"
+3. Import your GitHub repository
+4. Configure the project:
+   - Framework Preset: Vite
+   - Root Directory: client (IMPORTANT: Click "Edit" and change to "client")
+   - Build Command: npm run build
+   - Output Directory: dist
+
+5. Add Environment Variables:
+   - VITE_API_BASE_URL = https://your-app-name.onrender.com
+   - VITE_SUPABASE_URL = your_supabase_url
+   - VITE_SUPABASE_ANON_KEY = your_supabase_anon_key
+
+6. Click "Deploy"
+7. Note your frontend URL: https://your-project-name.vercel.app
+
+PART 3: SUPABASE CONFIGURATION
+==============================
+
+Step 1: Update Redirect URLs
+----------------------------
+1. Go to your Supabase dashboard
+2. Navigate to Authentication → URL Configuration
+3. Add to "Redirect URLs":
+   - https://your-frontend-name.vercel.app
+   - https://your-frontend-name.vercel.app/*
+   - https://your-frontend-name.vercel.app/auth/callback
+
+4. Update "Site URL" to: https://your-frontend-name.vercel.app
+
+Step 2: Update CORS Settings (if using Supabase Storage)
+-------------------------------------------------------
+1. Go to Storage → Policies
+2. Update any RLS policies to include your production domain
+
+PART 4: POST-DEPLOYMENT UPDATES
+===============================
+
+Step 1: Update Backend CORS
+---------------------------
+1. Go back to Render dashboard
+2. Update the FRONTEND_URL environment variable with your actual Vercel URL
+3. Redeploy the backend (Render → Manual Deploy)
+
+Step 2: Update Frontend API URL
+-------------------------------
+1. Go to Vercel dashboard
+2. Update VITE_API_BASE_URL with your actual Render backend URL
+3. Redeploy (happens automatically on git push)
+
+Step 3: Test Everything
+-----------------------
+1. Visit your frontend URL
+2. Test user registration/login
+3. Test creating posts/reviews
+4. Test image uploads
+5. Check browser console for any CORS errors
+
+PART 5: CONTINUOUS DEPLOYMENT
+=============================
+
+Both platforms are now configured for automatic deployment:
+
+1. Frontend (Vercel): Automatically deploys when you push to your main branch
+2. Backend (Render): Automatically deploys when you push to your main branch
+
+To make changes:
+1. Make your code changes locally
+2. Test locally
+3. Commit and push to GitHub
+4. Both frontend and backend will automatically redeploy
+
+TROUBLESHOOTING
+===============
+
+1. CORS Errors:
+   - Ensure backend CORS includes your frontend URL
+   - Check that credentials: true is set in CORS config
+   - Verify Authorization header is allowed
+
+2. API Connection Issues:
+   - Check VITE_API_BASE_URL in production
+   - Ensure backend is running (check Render logs)
+   - Test backend health endpoint: https://your-backend.onrender.com/health
+
+3. Supabase Auth Issues:
+   - Verify redirect URLs in Supabase dashboard
+   - Check that environment variables are set correctly
+   - Ensure anon key is used in frontend, not service key
+
+4. MongoDB Connection:
+   - Verify MONGODB_URI is correct
+   - Ensure IP whitelist in MongoDB Atlas includes 0.0.0.0/0
+   - Check connection string includes database name
+
+5. Image Upload Issues:
+   - Verify Cloudinary credentials
+   - Check file size limits
+   - Ensure multer middleware is configured
+
+MONITORING
+==========
+
+1. Render Dashboard:
+   - View logs: Dashboard → Logs
+   - Monitor metrics: Dashboard → Metrics
+   - Set up health checks
+
+2. Vercel Dashboard:
+   - View build logs
+   - Monitor function logs
+   - Check analytics
+
+3. Set up error tracking (optional):
+   - Sentry for error monitoring
+   - LogRocket for session replay
+
+DOMAIN SETUP (Optional)
+=======================
+
+To use custom domains:
+
+1. Frontend (Vercel):
+   - Go to Project Settings → Domains
+   - Add your domain
+   - Update DNS records as instructed
+
+2. Backend (Render):
+   - Go to Settings → Custom Domains
+   - Add your API subdomain (e.g., api.yourdomain.com)
+   - Update DNS records
+
+3. Update all URLs in code and Supabase to use new domains
+
+SECURITY CHECKLIST
+==================
+
+Before going live:
+- [ ] Remove all console.log statements with sensitive data
+- [ ] Ensure all API keys are in environment variables
+- [ ] Set up rate limiting on backend
+- [ ] Enable HTTPS (automatic on both platforms)
+- [ ] Review and update CORS settings
+- [ ] Test all authentication flows
+- [ ] Backup your database
+- [ ] Set up monitoring/alerts
+
+NEXT STEPS
+==========
+
+1. Deploy backend first, get the URL
+2. Deploy frontend with backend URL
+3. Update Supabase settings
+4. Test everything thoroughly
+5. Share your app URL!
+
+For updates, just push to GitHub and both services will auto-deploy within minutes.
