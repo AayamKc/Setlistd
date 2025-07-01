@@ -1,0 +1,45 @@
+BUGS TRACKER
+============
+
+Date: 2025-07-01
+Status: ACTIVE
+
+CURRENT BUGS
+-----------
+(None reported yet - will be updated as bugs are discovered)
+
+BUG TEMPLATE
+-----------
+Bug ID: B-001
+Date Discovered: YYYY-MM-DD
+Severity: Critical/High/Medium/Low
+Component: Frontend/Backend/Database/API
+Description: Clear description of the bug
+Steps to Reproduce:
+1. Step one
+2. Step two
+3. etc.
+Expected Behavior: What should happen
+Actual Behavior: What actually happens
+Error Messages: Any console errors or logs
+Status: Open/In Progress/Fixed
+Fixed Date: YYYY-MM-DD
+Fix Description: How the bug was resolved
+
+CATEGORIES
+----------
+- Authentication Issues
+- Image Upload Problems
+- Database Sync Errors
+- UI/UX Glitches
+- Performance Issues
+- Mobile Responsiveness
+- API Errors
+- State Management Bugs
+
+NOTES
+-----
+- Always include browser/device info for frontend bugs
+- Include request/response data for API bugs
+- Screenshot or screen recording links are helpful
+- Tag related bugs with common identifiers

@@ -8,6 +8,7 @@ const supabase = require('./config/supabase'); // Supabase client
 const { protect } = require('./middleware/authMiddleware'); // Auth middleware
 const reviewRoutes = require('./routes/reviewRoutes');
 const artistRoutes = require('./routes/artistRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -36,6 +37,9 @@ app.use('/api/events', reviewRoutes);
 
 // Artist Routes
 app.use('/api/artists', artistRoutes);
+
+// User Routes
+app.use('/api/users', userRoutes);
 
 // User Registration
 app.post('/auth/signup', async (req, res) => {

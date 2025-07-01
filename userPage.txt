@@ -1,0 +1,232 @@
+USER PAGE IMPLEMENTATION PLAN
+============================
+
+OVERVIEW
+--------
+Create a comprehensive user profile system with social features, allowing users to showcase their concert history, create posts, manage wishlists, and connect with other music fans.
+
+DATABASE SCHEMA UPDATES
+----------------------
+1. Update User Model (MongoDB)
+   - profilePicture: String (URL to image in storage)
+   - bannerImage: String (URL to image in storage)
+   - bio: String (max 500 chars)
+   - followers: [ObjectId] (array of user IDs)
+   - following: [ObjectId] (array of user IDs)
+   - attendedConcerts: [ObjectId] (array of event IDs)
+   - wishlistConcerts: [ObjectId] (array of event IDs)
+   - favoriteConcerts: [ObjectId] (array of event IDs)
+   - isPrivate: Boolean (default false)
+   - joinedDate: Date
+   - location: String (optional)
+   - socialLinks: {
+       instagram: String,
+       twitter: String,
+       spotify: String
+   }
+
+2. Create Post Model (MongoDB)
+   - userId: ObjectId (ref: User)
+   - eventId: ObjectId (ref: Event, optional)
+   - content: String (max 1000 chars)
+   - media: [{
+       type: String (enum: ['image', 'video']),
+       url: String
+   }]
+   - likes: [ObjectId] (array of user IDs)
+   - comments: [{
+       userId: ObjectId,
+       text: String,
+       createdAt: Date
+   }]
+   - createdAt: Date
+   - updatedAt: Date
+
+3. Update Review Model
+   - Add trigger to automatically add concert to user's attendedConcerts when review is created
+
+IMAGE UPLOAD SETUP
+-----------------
+1. Backend Setup
+   - Install multer for file handling
+   - Set up Supabase Storage buckets:
+     * profile-pictures
+     * banner-images
+     * post-media
+   - Create upload endpoints:
+     * POST /api/users/upload-profile-picture
+     * POST /api/users/upload-banner
+     * POST /api/posts/upload-media
+   - Add file size limits (5MB for images, 50MB for videos)
+   - Validate file types (jpg, png, gif for images; mp4, mov for videos)
+
+2. Frontend Upload Components
+   - Create ImageUploader component with drag-and-drop
+   - Add image cropping for profile pictures (square aspect ratio)
+   - Add banner cropping (16:9 aspect ratio)
+   - Show upload progress
+   - Preview before upload
+
+BACKEND API ROUTES
+-----------------
+1. User Profile Routes
+   - GET /api/users/:username - Get user profile by username
+   - PUT /api/users/profile - Update user profile (auth required)
+   - POST /api/users/follow/:userId - Follow a user
+   - DELETE /api/users/follow/:userId - Unfollow a user
+   - GET /api/users/:userId/followers - Get user's followers
+   - GET /api/users/:userId/following - Get who user follows
+   - GET /api/users/search?q=query - Search users
+
+2. Concert Management Routes
+   - POST /api/users/concerts/attended/:eventId - Add to attended
+   - DELETE /api/users/concerts/attended/:eventId - Remove from attended
+   - POST /api/users/concerts/wishlist/:eventId - Add to wishlist
+   - DELETE /api/users/concerts/wishlist/:eventId - Remove from wishlist
+   - POST /api/users/concerts/favorites/:eventId - Add to favorites
+   - DELETE /api/users/concerts/favorites/:eventId - Remove from favorites
+   - GET /api/users/:userId/concerts/attended - Get attended concerts
+   - GET /api/users/:userId/concerts/wishlist - Get wishlist
+   - GET /api/users/:userId/concerts/favorites - Get favorites
+
+3. Posts Routes
+   - POST /api/posts - Create new post
+   - GET /api/posts/user/:userId - Get user's posts
+   - GET /api/posts/feed - Get posts from followed users
+   - PUT /api/posts/:postId - Update post
+   - DELETE /api/posts/:postId - Delete post
+   - POST /api/posts/:postId/like - Like a post
+   - DELETE /api/posts/:postId/like - Unlike a post
+   - POST /api/posts/:postId/comment - Add comment
+   - DELETE /api/posts/:postId/comment/:commentId - Delete comment
+
+FRONTEND COMPONENTS
+------------------
+1. User Profile Page Structure
+   /user/:username
+   - UserProfile.jsx (main container)
+   - ProfileHeader.jsx
+     * Banner image with upload button (own profile only)
+     * Profile picture with upload button (own profile only)
+     * Username, bio, stats (followers, following, concerts)
+     * Follow/Unfollow button (other profiles)
+     * Edit Profile button (own profile only)
+   - ProfileTabs.jsx
+     * Attended | Wishlist | Favorites | Posts
+   - ProfileContent.jsx (renders based on active tab)
+
+2. Individual Tab Components
+   - AttendedConcerts.jsx
+     * Grid of ConcertCards
+     * Sort by date (newest first)
+     * Add Concert button (floating action button)
+   - WishlistConcerts.jsx
+     * Grid of upcoming concerts
+     * Sort by date (soonest first)
+     * Automatic removal after concert date passes
+   - FavoriteConcerts.jsx
+     * Grid of highlighted concerts
+     * Drag to reorder functionality
+   - UserPosts.jsx
+     * Feed-style posts with media
+     * Like and comment functionality
+
+3. Supporting Components
+   - EditProfileModal.jsx
+     * Update bio, location, social links
+     * Privacy settings
+   - AddConcertModal.jsx
+     * Search all concerts in database
+     * Filter by date, artist, venue
+     * Quick add to attended/wishlist/favorites
+   - CreatePostModal.jsx
+     * Text input with character count
+     * Media upload (multiple files)
+     * Tag a concert (optional)
+   - FollowersModal.jsx / FollowingModal.jsx
+     * List of users with follow/unfollow buttons
+     * Link to their profiles
+   - UserSearchBar.jsx
+     * Search users by username
+     * Dropdown with results
+
+FRONTEND ROUTING
+---------------
+Add to App.jsx:
+- /user/:username - User profile page
+- /settings - User settings page
+- /discover - Discover users and posts
+
+STATE MANAGEMENT
+---------------
+1. Update AuthContext
+   - Add user profile data to context
+   - Add methods for updating profile
+   - Cache followed users
+
+2. Create ProfileContext
+   - Manage viewed profile data
+   - Handle follow/unfollow state
+   - Cache concert lists
+
+FEATURES IMPLEMENTATION ORDER
+----------------------------
+Phase 1: Basic Profile
+1. Extend User model
+2. Create profile page with header
+3. Implement image uploads
+4. Add edit profile functionality
+
+Phase 2: Concert Lists
+1. Implement attended concerts tab
+2. Add wishlist functionality
+3. Create favorites system
+4. Build add concert modal
+
+Phase 3: Social Features
+1. Implement follow/unfollow system
+2. Create follower/following lists
+3. Add user search
+
+Phase 4: Posts System
+1. Create Post model and API
+2. Build post creation UI
+3. Implement feed view
+4. Add likes and comments
+
+ADDITIONAL CONSIDERATIONS
+------------------------
+1. Performance
+   - Paginate concert lists (20 per page)
+   - Lazy load images
+   - Cache user data in context
+   - Implement infinite scroll for posts
+
+2. Privacy
+   - Allow users to make profiles private
+   - Hide attended concerts from non-followers if private
+   - Block functionality
+
+3. Notifications (Future)
+   - New follower notifications
+   - Post likes/comments
+   - Concert reminders for wishlist
+
+4. Mobile Responsiveness
+   - Touch-friendly tab navigation
+   - Optimized image sizes
+   - Swipe gestures for tabs
+
+5. SEO
+   - Server-side rendering for profile pages
+   - Meta tags for social sharing
+   - Structured data for concerts
+
+VALIDATION RULES
+---------------
+1. Username: Unique, alphanumeric + underscore, 3-20 chars
+2. Bio: Max 500 characters
+3. Images: Max 5MB, supported formats only
+4. Posts: Max 1000 chars text, max 10 media files
+5. Following: Max 5000 users
+6. Concert lists: No duplicates within same list

@@ -1,6 +1,7 @@
 
 const Event = require('../models/Event');
 const Review = require('../models/Review');
+const User = require('../models/User');
 
 // @desc    Create new review
 // @route   POST /api/events/:eventId/reviews
@@ -55,6 +56,13 @@ exports.createReview = async (req, res) => {
     event.reviewCount = reviews.length;
 
     await event.save();
+
+    // Add event to user's attended concerts
+    const user = await User.findById(userId);
+    if (user && !user.attendedConcerts.includes(event._id)) {
+      user.attendedConcerts.push(event._id);
+      await user.save();
+    }
 
     res.status(201).json(review);
   } catch (error) {

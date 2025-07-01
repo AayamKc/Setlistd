@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../utils/supabase'
+import { useNavigate } from 'react-router-dom'
 import LoginModal from './LoginModal'
 import FilterModal from './FilterModal'
 
 const Header = ({ onSearch, onFilterChange, onLogoClick, initialFilters = {} }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [modalMode, setModalMode] = useState('login')
   const [searchQuery, setSearchQuery] = useState('')
@@ -73,7 +75,21 @@ const Header = ({ onSearch, onFilterChange, onLogoClick, initialFilters = {} }) 
             <div className="flex items-center space-x-6">
               {user ? (
                 <>
-                  <span className="text-sm">Welcome, {user.user_metadata?.username || user.email}</span>
+                  <button
+                    onClick={() => navigate(`/user/${user.user_metadata?.username}`)}
+                    className="text-sm hover:text-accent transition"
+                  >
+                    Welcome, {user.user_metadata?.username || user.email}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/user/${user.user_metadata?.username}`)}
+                    className="text-primary hover:text-accent transition"
+                    title="View Profile"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </button>
                   <button onClick={handleLogout} className="bg-primary text-secondary px-4 py-2 rounded hover:bg-primary-dark">
                     Logout
                   </button>
