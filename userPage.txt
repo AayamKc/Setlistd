@@ -56,10 +56,6 @@ IN-PROGRESS/TO-DO
 
 ### High Priority Features:
 
-1. **Edit Profile Modal** 
-   - Create modal for users to edit their profile information
-   - Fields: bio, location, social links
-   - Already have backend endpoints ready
 
 2. **Posts System**
    - Create Post model in backend
