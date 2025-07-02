@@ -226,24 +226,35 @@ app.get('/api/events', async (req, res) => {
 app.post('/api/events/save', async (req, res) => {
   try {
     const eventData = req.body;
+    console.log('Received event data to save:', eventData);
     
-    if (!eventData || !eventData.seatgeekId) {
-      return res.status(400).json({ error: 'Invalid event data' });
+    // Check for SeatGeek ID in different possible locations
+    const seatgeekId = eventData.seatgeekId || eventData.id;
+    
+    if (!eventData || !seatgeekId) {
+      console.error('Invalid event data - no seatgeekId found');
+      return res.status(400).json({ error: 'Invalid event data - no seatgeekId found' });
+    }
+    
+    // Handle venue data properly
+    let venueData = eventData.venue;
+    if (typeof venueData === 'string') {
+      venueData = { name: venueData };
     }
     
     const event = await Event.findOneAndUpdate(
-      { seatgeekId: eventData.seatgeekId },
+      { seatgeekId: seatgeekId },
       {
-        seatgeekId: eventData.seatgeekId,
-        title: eventData.title || eventData.tour,
+        seatgeekId: seatgeekId,
+        title: eventData.title || eventData.tour || 'Unknown Event',
         datetime_local: new Date(eventData.datetime_local || eventData.date),
         datetime_utc: eventData.datetime_utc ? new Date(eventData.datetime_utc) : undefined,
         url: eventData.url,
-        venue: eventData.venue || { name: eventData.venue },
+        venue: venueData,
         performers: eventData.performers || [{ name: eventData.artist, image: eventData.poster }],
         stats: eventData.stats,
         taxonomies: eventData.taxonomies,
-        type: eventData.type,
+        type: eventData.type || 'concert',
         status: eventData.status
       },
       { upsert: true, new: true }
@@ -252,8 +263,9 @@ app.post('/api/events/save', async (req, res) => {
     console.log(`Saved event: ${event.title} (${event._id})`);
     res.json(event);
   } catch (error) {
-    console.error('Error saving event:', error);
-    res.status(500).json({ error: 'Failed to save event' });
+    console.error('Error saving event:', error.message);
+    console.error('Full error:', error);
+    res.status(500).json({ error: 'Failed to save event: ' + error.message });
   }
 });
 

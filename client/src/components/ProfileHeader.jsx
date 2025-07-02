@@ -15,6 +15,7 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
   const bannerInputRef = useRef(null)
 
   const handleConcertSelect = async (concert, type) => {
+    console.log('handleConcertSelect called with:', { concert, type })
     setAddingConcert(true)
     try {
       let concertId = concert._id
@@ -22,10 +23,14 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
       
       // If no MongoDB _id, save the event first
       if (!concertId) {
+        console.log('No MongoDB _id found, saving event first')
+        console.log('Event data to save:', concert.fullEvent || concert)
+        
         // Save the event to database
         const saveResponse = await api.post('/api/events/save', concert.fullEvent || concert)
         concertId = saveResponse.data._id
         concertToAdd = saveResponse.data
+        console.log('Event saved with _id:', concertId)
       }
       
       if (!concertId) {
@@ -67,9 +72,11 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
       } else if (error.response?.status === 404) {
         errorMessage = 'Concert not found. Please try again.'
       } else if (error.response?.status === 400) {
-        errorMessage = error.response.data.message || 'Concert may already be in your list.'
+        errorMessage = error.response.data.message || error.response.data.error || 'Concert may already be in your list.'
       } else if (error.response?.data?.error) {
         errorMessage = error.response.data.error
+      } else if (error.message) {
+        errorMessage = error.message
       }
       
       setToast({ message: errorMessage, type: 'error' })

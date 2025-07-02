@@ -76,23 +76,32 @@ function CatalogModal({ onClose, onConcertSelect }) {
       console.log(`${selectedType} concerts API response:`, response.data)
       
       // Handle different response formats
-      const events = selectedType === 'wishlist' 
-        ? (response.data.events || [])
-        : (response.data.events || [])
+      const events = response.data.events || []
+      console.log('Raw events from API:', events[0]) // Debug first event
       
       // Transform events to our format
-      const transformedEvents = events.map(event => ({
-        _id: event._id,  // Keep the MongoDB _id
-        artist: event.performers?.[0]?.name || event.title,
-        tour: event.title,
-        venue: event.venue?.name || '',
-        city: event.venue?.city || '',
-        date: event.datetime_local,
-        poster: event.performers?.[0]?.image || null,
-        seatgeekId: event.seatgeekId || event.id,  // SeatGeek API uses 'id'
-        // Store full event data for later use
-        fullEvent: event
-      }))
+      const transformedEvents = events.map(event => {
+        // For wishlist (from SeatGeek API), event structure is different
+        const transformed = {
+          _id: event._id,  // May be undefined for SeatGeek events
+          artist: event.performers?.[0]?.name || event.title,
+          tour: event.title,
+          venue: typeof event.venue === 'string' ? event.venue : event.venue?.name || '',
+          city: event.venue?.city || '',
+          date: event.datetime_local,
+          poster: event.performers?.[0]?.image || null,
+          seatgeekId: event.seatgeekId || event.id,  // SeatGeek API uses 'id'
+          // Store full event data for later use
+          fullEvent: event
+        }
+        
+        // Ensure we have required fields for venue
+        if (typeof event.venue === 'object') {
+          transformed.fullEvent.venue = event.venue
+        }
+        
+        return transformed
+      })
       
       if (page === 1) {
         setConcerts(transformedEvents)
