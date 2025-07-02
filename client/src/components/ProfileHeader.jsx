@@ -54,13 +54,8 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
       onProfileUpdate(updatedProfile)
       setShowCatalogModal(false)
       
-      // Show success message
-      setToast({ message: `Concert added to ${type}!`, type: 'success' })
-      
-      // Refresh the page to show updated lists after a short delay
-      setTimeout(() => {
-        window.location.reload()
-      }, 1500)
+      // Refresh the page immediately to show updated lists
+      window.location.reload()
     } catch (error) {
       console.error('Error adding concert:', error)
       console.error('Concert data:', concert)

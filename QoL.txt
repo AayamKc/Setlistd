@@ -1,4 +1,12 @@
-Change sucess color to lavendar in order to be consistent with color scheme
-    - also the notifications in general kind of look ugly and they have two x buttons for whatever
+1. Change sucess color to lavendar in order to be consistent with color scheme
+    - also the notifications in general kind of look ugly and they have two x buttons for whatever reason
 
-There needs to be an automatic reload once a user removes a concert, so that the view is immeaditely updated
+    I think the best way to handle this is to not do any notifications for a sucessfulyl adeded concert and only do notifications for errors. try different 
+    design choice to make the errors look better. but make sure it is consistent with what the website is going for.
+
+2. There needs to be an automatic reload once a user removes a concert, so that the view is immeaditely updated
+
+3. also the search bar in the catalog view does not work properly. For exmaple, when I search up "Burna Boy" in the wishlist, he does not show up even though I know he has many upcoming
+concerts 
+
+4.The handling for a user uploading a profile picture exists, but there is no actual upload a profile picture present on the user page.

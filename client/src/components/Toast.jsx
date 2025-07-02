@@ -12,13 +12,13 @@ const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {
   const getToastStyles = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-600 text-white'
+        return 'bg-primary text-secondary border border-primary-dark'
       case 'error':
-        return 'bg-red-600 text-white'
+        return 'bg-red-50 text-red-800 border border-red-200'
       case 'info':
-        return 'bg-blue-600 text-white'
+        return 'bg-blue-50 text-blue-800 border border-blue-200'
       default:
-        return 'bg-gray-600 text-white'
+        return 'bg-gray-50 text-gray-800 border border-gray-200'
     }
   }
 
@@ -48,12 +48,14 @@ const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {
   }
 
   return (
-    <div className={`fixed top-4 right-4 z-[70] flex items-center gap-3 px-6 py-4 rounded-lg shadow-lg ${getToastStyles()} animate-slide-in`}>
-      {getIcon()}
-      <span className="font-medium">{message}</span>
+    <div className={`fixed top-4 right-4 z-[70] flex items-center gap-3 px-5 py-3 rounded-lg shadow-md ${getToastStyles()} animate-slide-in`}>
+      <div className="flex-shrink-0">
+        {getIcon()}
+      </div>
+      <span className="text-sm font-medium">{message}</span>
       <button
         onClick={onClose}
-        className="ml-4 hover:opacity-80 transition-opacity"
+        className="ml-auto flex-shrink-0 hover:opacity-70 transition-opacity"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
