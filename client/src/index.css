@@ -24,6 +24,7 @@
   animation-name: fadeIn;
 }
 
+/* this  is for a random push */
 .animated-text.fade-out {
   animation-name: fadeOut;
 }
