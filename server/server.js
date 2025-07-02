@@ -23,7 +23,9 @@ app.use(cors({
     'http://localhost:5174',  // Alternative Vite port
     'http://localhost:3000',  // Same origin
     'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174'
+    'http://127.0.0.1:5174',
+    'https://your-frontend-name.vercel.app',
+    process.env.FRONTEND_URL                  
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -40,6 +42,11 @@ app.use('/api/artists', artistRoutes);
 
 // User Routes
 app.use('/api/users', userRoutes);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
 
 // User Registration
 app.post('/auth/signup', async (req, res) => {
