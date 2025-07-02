@@ -17,6 +17,37 @@ COMPLETED FEATURES
 
 IN-PROGRESS/TO-DO
 -----------------
+
+PHASE 1: Fix Concert Review Display Issue
+-----------------------------------------
+**Problem:** When opening a concert card from the attended page, reviews are not displayed even though they exist. This is because ConcertModal is looking for `event.id` but events from the database use `_id` and `seatgeekId`.
+
+**Root Cause:** The ConcertModal component expects `event.id` throughout the code, but:
+- Events from MongoDB have `_id` (MongoDB ID) and `seatgeekId` properties
+- The review system uses `seatgeekId` to identify events
+- `event.id` is undefined, causing review fetches to fail
+
+**Solution:**
+1. Update ConcertModal.jsx to use `event.seatgeekId` instead of `event.id`:
+   - Line 31: Change condition from `event.id` to `event.seatgeekId`
+   - Line 34: Pass `event.seatgeekId` to getEventReviews
+   - Line 74: Pass `event.seatgeekId` to submitReview
+   - Lines 119, 146: Pass `event.seatgeekId` for update/delete operations
+
+2. Verify that events passed from ProfileContent → ConcertCard → ConcertModal include the seatgeekId field
+
+3. Test the fix by:
+   - Adding a concert to attended list
+   - Leaving a review on that concert
+   - Navigating to the user profile's attended page
+   - Opening the concert card and confirming reviews display
+
+**Files to modify:**
+- `client/src/components/ConcertModal.jsx` (primary fix)
+- Potentially verify data structure in `client/src/components/ProfileContent.jsx`
+
+-----------------
+
 - **Frontend for Concert Lists:** While the backend is ready, the frontend components to display and manage the attended, wishlist, and favorites concert lists still need to be fully implemented.
 - **Posts System:** The entire posts system, from the `Post` model and API to the frontend components for creating, viewing, and interacting with posts, is yet to be built.
 - **Edit Profile Modal:** The modal for editing user profile information needs to be created.

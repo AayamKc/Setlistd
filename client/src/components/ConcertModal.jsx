@@ -28,10 +28,10 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   };
 
   useEffect(() => {
-    if (isOpen && event && event.id) {
+    if (isOpen && event && event.seatgeekId) {
       const fetchReviews = async () => {
         try {
-          const response = await eventsAPI.getEventReviews(event.id);
+          const response = await eventsAPI.getEventReviews(event.seatgeekId);
           setExistingReviews(response.data);
         } catch (error) {
           console.error('Error fetching reviews:', error);
@@ -71,7 +71,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
     console.log('Submitting review, isSubmitting:', true);
     
     try {
-      await eventsAPI.submitReview(event.id, { rating, reviewText: review });
+      await eventsAPI.submitReview(event.seatgeekId, { rating, reviewText: review });
       
       // Trigger confetti animation
       confetti({
@@ -115,14 +115,14 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
     }
 
     try {
-      console.log('Updating review:', { eventId: event.id, reviewId, rating: editingRating });
-      await eventsAPI.updateReview(event.id, reviewId, {
+      console.log('Updating review:', { eventId: event.seatgeekId, reviewId, rating: editingRating });
+      await eventsAPI.updateReview(event.seatgeekId, reviewId, {
         rating: editingRating,
         reviewText: editingText
       });
       
       // Refresh reviews
-      const response = await eventsAPI.getEventReviews(event.id);
+      const response = await eventsAPI.getEventReviews(event.seatgeekId);
       setExistingReviews(response.data);
       
       // Clear editing state
@@ -142,11 +142,11 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
 
   const handleDeleteReview = async (reviewId) => {
     try {
-      console.log('Deleting review:', { eventId: event.id, reviewId });
-      await eventsAPI.deleteReview(event.id, reviewId);
+      console.log('Deleting review:', { eventId: event.seatgeekId, reviewId });
+      await eventsAPI.deleteReview(event.seatgeekId, reviewId);
       
       // Refresh reviews
-      const response = await eventsAPI.getEventReviews(event.id);
+      const response = await eventsAPI.getEventReviews(event.seatgeekId);
       setExistingReviews(response.data);
       
       // Close confirmation dialog
