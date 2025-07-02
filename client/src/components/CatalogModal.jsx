@@ -19,6 +19,20 @@ function CatalogModal({ onClose, onConcertSelect }) {
     loadConcerts()
   }, [selectedType])
 
+  // Reload concerts when search query changes (for wishlist tab only)
+  useEffect(() => {
+    if (selectedType === 'wishlist') {
+      // Debounce the search to avoid too many API calls
+      const timeoutId = setTimeout(() => {
+        setPage(1)
+        setConcerts([])
+        loadConcerts()
+      }, 500)
+      
+      return () => clearTimeout(timeoutId)
+    }
+  }, [searchQuery, selectedType])
+
   // Filter concerts based on search query and selected tab
   useEffect(() => {
     let filtered = [...concerts]
@@ -77,12 +91,20 @@ function CatalogModal({ onClose, onConcertSelect }) {
         save: 'true'
       }
       
+      // Add search query if provided
+      if (searchQuery.trim()) {
+        params.q = searchQuery.trim()
+      }
+      
       // For wishlist, only get upcoming concerts by setting from_date to tomorrow to ensure truly future concerts
       if (selectedType === 'wishlist') {
         const tomorrow = new Date()
         tomorrow.setDate(tomorrow.getDate() + 1)
         params.from_date = tomorrow.toISOString().split('T')[0]
-        params.q = 'concert' // Default search query like landing page
+        // Only set default query if no search query is provided
+        if (!searchQuery.trim()) {
+          params.q = 'concert' // Default search query like landing page
+        }
       }
         
       const response = await api.get(endpoint, { params })

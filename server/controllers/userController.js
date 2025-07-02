@@ -79,7 +79,7 @@ const uploadProfilePicture = async (req, res) => {
     }
 
     const userId = req.user.id;
-    const publicUrl = await uploadToSupabase(req.file, 'profile-pictures', userId);
+    const publicUrl = await uploadToSupabase(req.file, 'profile-images', userId);
     
     const user = await User.findByIdAndUpdate(
       userId,
