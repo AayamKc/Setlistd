@@ -23,15 +23,13 @@ function CatalogModal({ onClose, onConcertSelect }) {
   useEffect(() => {
     let filtered = [...concerts]
     
-    // Filter by date based on selected tab
+    // Filter by date based on selected tab (only for attended/favorites since wishlist is pre-filtered server-side)
     const now = new Date()
-    if (selectedType === 'wishlist') {
-      // Wishlist: only future concerts
-      filtered = filtered.filter(concert => new Date(concert.date) > now)
-    } else if (selectedType === 'attended' || selectedType === 'favorites') {
+    if (selectedType === 'attended' || selectedType === 'favorites') {
       // Attended and Favorites: only past concerts
       filtered = filtered.filter(concert => new Date(concert.date) <= now)
     }
+    // Note: wishlist filtering is now done server-side via from_date parameter, so no client-side filtering needed
     
     // Apply search filter
     if (searchQuery.trim()) {
@@ -66,13 +64,28 @@ function CatalogModal({ onClose, onConcertSelect }) {
   const loadConcerts = async () => {
     setLoading(true)
     try {
-      // For wishlist, we want to search all concerts (including upcoming ones)
-      // For attended/favorites, we can use saved events
+      // For wishlist, we want to search upcoming concerts only
+      // For attended/favorites, we can use saved events (all dates)
       const endpoint = selectedType === 'wishlist' 
-        ? `/api/events?page=${page}&per_page=20&save=true&from_date=${new Date().toISOString().split('T')[0]}`
-        : `/api/saved-events?page=${page}&limit=20`
+        ? `/api/events`
+        : `/api/saved-events`
+      
+      const params = {
+        page,
+        per_page: 20,
+        limit: 20,
+        save: 'true'
+      }
+      
+      // For wishlist, only get upcoming concerts by setting from_date to tomorrow to ensure truly future concerts
+      if (selectedType === 'wishlist') {
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        params.from_date = tomorrow.toISOString().split('T')[0]
+        params.q = 'concert' // Default search query like landing page
+      }
         
-      const response = await api.get(endpoint)
+      const response = await api.get(endpoint, { params })
       console.log(`${selectedType} concerts API response:`, response.data)
       
       // Handle different response formats
