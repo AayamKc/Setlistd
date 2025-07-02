@@ -107,7 +107,7 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
         {/* Blurred backdrop layer */}
         <div className="absolute inset-0">
           <img
-            src={profile.bannerImage || '/banner.jpg'}
+            src={profile.bannerImage || '/Setlistd.png'}
             alt=""
             className="w-full h-full object-cover blur-xl opacity-50"
             loading="eager"
@@ -118,7 +118,7 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
         {/* Main image layer */}
         <div className="absolute inset-0 flex items-center justify-center">
           <img
-            src={profile.bannerImage || '/banner.jpg'}
+            src={profile.bannerImage || '/Setlistd.png'}
             alt="Banner"
             className="h-full w-auto max-w-none object-contain"
             loading="eager"
