@@ -1,0 +1,4 @@
+Change sucess color to lavendar in order to be consistent with color scheme
+    - also the notifications in general kind of look ugly and they have two x buttons for whatever
+
+There needs to be an automatic reload once a user removes a concert, so that the view is immeaditely updated
