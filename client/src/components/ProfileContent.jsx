@@ -3,6 +3,7 @@ import api from '../utils/api'
 import ConcertCard from './ConcertCard'
 import UserPosts from './UserPosts'
 import AddConcertModal from './AddConcertModal'
+import ConfirmDialog from './ConfirmDialog'
 
 function ProfileContent({ profile, activeTab, isOwnProfile }) {
   const [concerts, setConcerts] = useState({
@@ -13,6 +14,7 @@ function ProfileContent({ profile, activeTab, isOwnProfile }) {
   const [loading, setLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [addModalType, setAddModalType] = useState('attended')
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, concertId: null, type: null })
 
   useEffect(() => {
     if (activeTab !== 'posts') {
@@ -48,6 +50,11 @@ function ProfileContent({ profile, activeTab, isOwnProfile }) {
   }
 
   const handleRemoveConcert = async (concertId, type) => {
+    setConfirmDialog({ isOpen: true, concertId, type })
+  }
+
+  const confirmRemoveConcert = async () => {
+    const { concertId, type } = confirmDialog
     try {
       await api.delete(`/api/users/concerts/${type}/${concertId}`)
       setConcerts(prev => ({
@@ -57,6 +64,7 @@ function ProfileContent({ profile, activeTab, isOwnProfile }) {
     } catch (error) {
       console.error('Error removing concert:', error)
     }
+    setConfirmDialog({ isOpen: false, concertId: null, type: null })
   }
 
   if (activeTab === 'posts') {
@@ -96,11 +104,11 @@ function ProfileContent({ profile, activeTab, isOwnProfile }) {
                 {isOwnProfile && (
                   <button
                     onClick={() => handleRemoveConcert(concert._id, activeTab)}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"
+                    className="absolute top-2 right-2 bg-gray-800 bg-opacity-80 text-gray-400 rounded-lg p-2 hover:bg-opacity-100 hover:text-primary transition-all duration-200"
                     title="Remove from list"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 )}
@@ -130,6 +138,16 @@ function ProfileContent({ profile, activeTab, isOwnProfile }) {
           onAdd={handleConcertAdded}
         />
       )}
+      
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Remove Concert"
+        message={`Are you sure you want to remove this concert from your ${confirmDialog.type} list?`}
+        onConfirm={confirmRemoveConcert}
+        onCancel={() => setConfirmDialog({ isOpen: false, concertId: null, type: null })}
+        confirmText="Remove"
+        cancelText="Cancel"
+      />
     </div>
   )
 }

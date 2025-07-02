@@ -2,19 +2,36 @@ import { useState, useRef } from 'react'
 import api from '../utils/api'
 import EditProfileModal from './EditProfileModal'
 import CatalogModal from './CatalogModal'
+import Toast from './Toast'
 
 function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onProfileUpdate }) {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showCatalogModal, setShowCatalogModal] = useState(false)
   const [uploadingProfile, setUploadingProfile] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
+  const [addingConcert, setAddingConcert] = useState(false)
+  const [toast, setToast] = useState(null)
   const profileInputRef = useRef(null)
   const bannerInputRef = useRef(null)
 
   const handleConcertSelect = async (concert, type) => {
+    setAddingConcert(true)
     try {
-      // Use seatgeekId for the endpoint
-      const concertId = concert.seatgeekId || concert._id
+      let concertId = concert._id
+      let concertToAdd = concert
+      
+      // If no MongoDB _id, save the event first
+      if (!concertId) {
+        // Save the event to database
+        const saveResponse = await api.post('/api/events/save', concert.fullEvent || concert)
+        concertId = saveResponse.data._id
+        concertToAdd = saveResponse.data
+      }
+      
+      if (!concertId) {
+        throw new Error('Failed to save concert')
+      }
+      
       const endpoint = `/api/users/concerts/${type}/${concertId}`
       await api.post(endpoint)
       
@@ -22,25 +39,41 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
       const updatedProfile = { ...profile }
       
       if (type === 'attended') {
-        updatedProfile.attendedConcerts = [...(profile.attendedConcerts || []), concert]
+        updatedProfile.attendedConcerts = [...(profile.attendedConcerts || []), concertToAdd]
       } else if (type === 'wishlist') {
-        updatedProfile.wishlistConcerts = [...(profile.wishlistConcerts || []), concert]
+        updatedProfile.wishlistConcerts = [...(profile.wishlistConcerts || []), concertToAdd]
       } else if (type === 'favorites') {
-        updatedProfile.favoriteConcerts = [...(profile.favoriteConcerts || []), concert]
+        updatedProfile.favoriteConcerts = [...(profile.favoriteConcerts || []), concertToAdd]
       }
       
       onProfileUpdate(updatedProfile)
       setShowCatalogModal(false)
       
       // Show success message
-      alert(`Concert added to ${type}!`)
+      setToast({ message: `Concert added to ${type}!`, type: 'success' })
+      
+      // Refresh the page to show updated lists after a short delay
+      setTimeout(() => {
+        window.location.reload()
+      }, 1500)
     } catch (error) {
       console.error('Error adding concert:', error)
-      if (error.response?.status === 404) {
-        alert('Concert not found. It may need to be saved to the database first.')
-      } else {
-        alert('Failed to add concert. Please try again.')
+      console.error('Concert data:', concert)
+      
+      let errorMessage = 'Failed to add concert. Please try again.'
+      
+      if (error.message === 'Failed to save concert') {
+        errorMessage = 'Failed to save concert to database. Please try again.'
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Concert not found. Please try again.'
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data.message || 'Concert may already be in your list.'
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error
       }
+      
+      setToast({ message: errorMessage, type: 'error' })
+      setAddingConcert(false)
     }
   }
 
@@ -63,7 +96,7 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
       })
     } catch (error) {
       console.error('Error uploading profile picture:', error)
-      alert('Failed to upload profile picture')
+      setToast({ message: 'Failed to upload profile picture', type: 'error' })
     } finally {
       setUploadingProfile(false)
     }
@@ -88,7 +121,7 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
       })
     } catch (error) {
       console.error('Error uploading banner:', error)
-      alert('Failed to upload banner')
+      setToast({ message: 'Failed to upload banner', type: 'error' })
     } finally {
       setUploadingBanner(false)
     }
@@ -325,6 +358,25 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
         <CatalogModal
           onClose={() => setShowCatalogModal(false)}
           onConcertSelect={handleConcertSelect}
+        />
+      )}
+      
+      {/* Loading overlay */}
+      {addingConcert && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-75">
+          <div className="bg-gray-800 text-white px-8 py-6 rounded-lg shadow-2xl text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <div className="text-lg font-semibold">Adding...</div>
+          </div>
+        </div>
+      )}
+      
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
     </div>

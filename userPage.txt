@@ -18,33 +18,62 @@ COMPLETED FEATURES
 IN-PROGRESS/TO-DO
 -----------------
 
-PHASE 1: Fix Concert Review Display Issue
+PHASE 1: Fix Concert Review Display Issue ✅ COMPLETED
 -----------------------------------------
 **Problem:** When opening a concert card from the attended page, reviews are not displayed even though they exist. This is because ConcertModal is looking for `event.id` but events from the database use `_id` and `seatgeekId`.
 
-**Root Cause:** The ConcertModal component expects `event.id` throughout the code, but:
-- Events from MongoDB have `_id` (MongoDB ID) and `seatgeekId` properties
-- The review system uses `seatgeekId` to identify events
-- `event.id` is undefined, causing review fetches to fail
+**Solution Implemented:** Updated ConcertModal.jsx to use `event.seatgeekId` instead of `event.id` throughout the component.
 
-**Solution:**
-1. Update ConcertModal.jsx to use `event.seatgeekId` instead of `event.id`:
-   - Line 31: Change condition from `event.id` to `event.seatgeekId`
-   - Line 34: Pass `event.seatgeekId` to getEventReviews
-   - Line 74: Pass `event.seatgeekId` to submitReview
-   - Lines 119, 146: Pass `event.seatgeekId` for update/delete operations
+-----------------
 
-2. Verify that events passed from ProfileContent → ConcertCard → ConcertModal include the seatgeekId field
+PHASE 2: Add Concert to Lists from Catalog ✅ COMPLETED
+------------------------------------------
+**Problem:** Users can browse concerts in the catalog but cannot add them to their attended, wishlist, or favorites lists without going to their profile page.
 
-3. Test the fix by:
-   - Adding a concert to attended list
-   - Leaving a review on that concert
-   - Navigating to the user profile's attended page
-   - Opening the concert card and confirming reviews display
+**Solution Implemented:** 
+- Fixed CatalogModal to preserve MongoDB _id correctly
+- Updated ProfileHeader handleConcertSelect to use correct concert ID
+- Added better error handling and debugging
+
+-----------------
+
+PHASE 3: Improve Catalog UX and Concert Filtering
+-------------------------------------------------
+**Problem:** The catalog needs better user feedback and date-based filtering for concert tabs.
+
+**Requirements:**
+1. **Loading State**: When adding a concert, show "Adding..." loading screen
+2. **Page Refresh**: After successfully adding, refresh to show the updated lists
+3. **Date-based Tab Filtering**:
+   - Wishlist tab: Show only upcoming concerts (future dates)
+   - Attended tab: Show only past concerts
+   - Favorites tab: Show only past concerts
+
+**Current Issues:**
+- No visual feedback during the add operation
+- User doesn't see their lists update immediately
+- All concerts show in all tabs regardless of date
+
+**Solution Plan:**
+1. **Add Loading State to ProfileHeader**:
+   - Create loading overlay with "Adding..." message
+   - Show during API call
+   - Block user interaction while loading
+
+2. **Implement Page Refresh**:
+   - After successful add, refresh the page
+   - This ensures profile data is up-to-date
+   - Shows the newly added concert in the appropriate list
+
+3. **Update CatalogModal Concert Filtering**:
+   - Filter concerts based on selected tab and current date
+   - Wishlist: filter for datetime_local > now
+   - Attended/Favorites: filter for datetime_local <= now
+   - Update the filtered results when tab changes
 
 **Files to modify:**
-- `client/src/components/ConcertModal.jsx` (primary fix)
-- Potentially verify data structure in `client/src/components/ProfileContent.jsx`
+- `client/src/components/ProfileHeader.jsx` - Add loading state and refresh
+- `client/src/components/CatalogModal.jsx` - Add date-based filtering
 
 -----------------
 

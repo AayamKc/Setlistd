@@ -12,16 +12,31 @@ function CatalogModal({ onClose, onConcertSelect }) {
   const scrollContainerRef = useRef(null)
   const observerRef = useRef(null)
 
-  // Load concerts on mount
+  // Load concerts on mount and when tab changes
   useEffect(() => {
+    setPage(1)
+    setConcerts([])
     loadConcerts()
-  }, [])
+  }, [selectedType])
 
-  // Filter concerts based on search query
+  // Filter concerts based on search query and selected tab
   useEffect(() => {
+    let filtered = [...concerts]
+    
+    // Filter by date based on selected tab
+    const now = new Date()
+    if (selectedType === 'wishlist') {
+      // Wishlist: only future concerts
+      filtered = filtered.filter(concert => new Date(concert.date) > now)
+    } else if (selectedType === 'attended' || selectedType === 'favorites') {
+      // Attended and Favorites: only past concerts
+      filtered = filtered.filter(concert => new Date(concert.date) <= now)
+    }
+    
+    // Apply search filter
     if (searchQuery.trim()) {
-      const filtered = concerts.filter(concert => {
-        const searchLower = searchQuery.toLowerCase()
+      const searchLower = searchQuery.toLowerCase()
+      filtered = filtered.filter(concert => {
         return (
           concert.artist?.toLowerCase().includes(searchLower) ||
           concert.venue?.toLowerCase().includes(searchLower) ||
@@ -29,11 +44,10 @@ function CatalogModal({ onClose, onConcertSelect }) {
           concert.city?.toLowerCase().includes(searchLower)
         )
       })
-      setFilteredConcerts(filtered)
-    } else {
-      setFilteredConcerts(concerts)
     }
-  }, [searchQuery, concerts])
+    
+    setFilteredConcerts(filtered)
+  }, [searchQuery, concerts, selectedType])
 
   // Intersection Observer for infinite scroll
   const lastConcertRef = useCallback(node => {
@@ -52,22 +66,32 @@ function CatalogModal({ onClose, onConcertSelect }) {
   const loadConcerts = async () => {
     setLoading(true)
     try {
-      const response = await api.get(`/api/saved-events?page=${page}&limit=20`)
-      console.log('Saved concerts API response:', response.data)
+      // For wishlist, we want to search all concerts (including upcoming ones)
+      // For attended/favorites, we can use saved events
+      const endpoint = selectedType === 'wishlist' 
+        ? `/api/events?page=${page}&per_page=20&save=true&from_date=${new Date().toISOString().split('T')[0]}`
+        : `/api/saved-events?page=${page}&limit=20`
+        
+      const response = await api.get(endpoint)
+      console.log(`${selectedType} concerts API response:`, response.data)
       
-      // The API returns saved events from MongoDB
-      const events = response.data.events || []
+      // Handle different response formats
+      const events = selectedType === 'wishlist' 
+        ? (response.data.events || [])
+        : (response.data.events || [])
       
-      // Transform saved events to our format
+      // Transform events to our format
       const transformedEvents = events.map(event => ({
-        _id: event._id || event.seatgeekId,
+        _id: event._id,  // Keep the MongoDB _id
         artist: event.performers?.[0]?.name || event.title,
         tour: event.title,
         venue: event.venue?.name || '',
         city: event.venue?.city || '',
         date: event.datetime_local,
         poster: event.performers?.[0]?.image || null,
-        seatgeekId: event.seatgeekId
+        seatgeekId: event.seatgeekId || event.id,  // SeatGeek API uses 'id'
+        // Store full event data for later use
+        fullEvent: event
       }))
       
       if (page === 1) {
@@ -91,7 +115,7 @@ function CatalogModal({ onClose, onConcertSelect }) {
     if (page > 1) {
       loadConcerts()
     }
-  }, [page])
+  }, [page, selectedType])
 
   const handleConcertSelect = (concert) => {
     onConcertSelect(concert, selectedType)
@@ -245,7 +269,17 @@ function CatalogModal({ onClose, onConcertSelect }) {
 
           {filteredConcerts.length === 0 && !loading && (
             <div className="text-center text-gray-400 mt-8">
-              {searchQuery ? 'No concerts found matching your search.' : 'No concerts available.'}
+              {searchQuery ? (
+                'No concerts found matching your search.'
+              ) : selectedType === 'wishlist' ? (
+                'No upcoming concerts available. Only future concerts can be added to wishlist.'
+              ) : selectedType === 'attended' ? (
+                'No past concerts available. Only past concerts can be marked as attended.'
+              ) : selectedType === 'favorites' ? (
+                'No past concerts available. Only past concerts can be added to favorites.'
+              ) : (
+                'No concerts available.'
+              )}
             </div>
           )}
         </div>

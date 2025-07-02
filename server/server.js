@@ -222,6 +222,41 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
+// Save a single event to database
+app.post('/api/events/save', async (req, res) => {
+  try {
+    const eventData = req.body;
+    
+    if (!eventData || !eventData.seatgeekId) {
+      return res.status(400).json({ error: 'Invalid event data' });
+    }
+    
+    const event = await Event.findOneAndUpdate(
+      { seatgeekId: eventData.seatgeekId },
+      {
+        seatgeekId: eventData.seatgeekId,
+        title: eventData.title || eventData.tour,
+        datetime_local: new Date(eventData.datetime_local || eventData.date),
+        datetime_utc: eventData.datetime_utc ? new Date(eventData.datetime_utc) : undefined,
+        url: eventData.url,
+        venue: eventData.venue || { name: eventData.venue },
+        performers: eventData.performers || [{ name: eventData.artist, image: eventData.poster }],
+        stats: eventData.stats,
+        taxonomies: eventData.taxonomies,
+        type: eventData.type,
+        status: eventData.status
+      },
+      { upsert: true, new: true }
+    );
+    
+    console.log(`Saved event: ${event.title} (${event._id})`);
+    res.json(event);
+  } catch (error) {
+    console.error('Error saving event:', error);
+    res.status(500).json({ error: 'Failed to save event' });
+  }
+});
+
 // Clear all events from database
 app.get('/api/clear-events', async (req, res) => {
   try {
