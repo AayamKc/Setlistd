@@ -24,7 +24,7 @@ app.use(cors({
     'http://localhost:3000',  // Same origin
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
-    'https://your-frontend-name.vercel.app',
+    'https://setlistd.vercel.app',
     process.env.FRONTEND_URL                  
   ],
   credentials: true,
