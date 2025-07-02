@@ -209,11 +209,25 @@ app.get('/api/events', async (req, res) => {
           }
         }
         console.log(`Saved ${savedEvents.length} events to database`);
+        
+        // Add seatgeekId field to each event for consistency
+        response.data.events = response.data.events.map(event => ({
+          ...event,
+          seatgeekId: event.id
+        }));
       }
     } else {
       console.log('No concerts found');
     }
     console.log('================================\n');
+
+    // Always add seatgeekId field to each event for consistency with MongoDB events
+    if (response.data.events) {
+      response.data.events = response.data.events.map(event => ({
+        ...event,
+        seatgeekId: event.id
+      }));
+    }
 
     res.json(response.data);
   } catch (error) {
