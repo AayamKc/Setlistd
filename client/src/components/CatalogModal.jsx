@@ -52,22 +52,22 @@ function CatalogModal({ onClose, onConcertSelect }) {
   const loadConcerts = async () => {
     setLoading(true)
     try {
-      const response = await api.get(`/api/events?page=${page}&per_page=20`)
-      console.log('Concerts API response:', response.data)
+      const response = await api.get(`/api/saved-events?page=${page}&limit=20`)
+      console.log('Saved concerts API response:', response.data)
       
-      // The API returns SeatGeek format with events array
+      // The API returns saved events from MongoDB
       const events = response.data.events || []
       
-      // Transform SeatGeek events to our format
+      // Transform saved events to our format
       const transformedEvents = events.map(event => ({
-        _id: event.id,
+        _id: event._id || event.seatgeekId,
         artist: event.performers?.[0]?.name || event.title,
         tour: event.title,
         venue: event.venue?.name || '',
         city: event.venue?.city || '',
         date: event.datetime_local,
         poster: event.performers?.[0]?.image || null,
-        seatgeekId: event.id
+        seatgeekId: event.seatgeekId
       }))
       
       if (page === 1) {
@@ -76,9 +76,9 @@ function CatalogModal({ onClose, onConcertSelect }) {
         setConcerts(prev => [...prev, ...transformedEvents])
       }
       
-      // Check if there are more pages based on meta data
-      const totalPages = Math.ceil((response.data.meta?.total || 0) / 20)
-      setHasMore(page < totalPages)
+      // Check if there are more pages based on pagination data
+      const pagination = response.data.pagination || {}
+      setHasMore(page < (pagination.pages || 1))
     } catch (error) {
       console.error('Error loading concerts:', error)
     } finally {
