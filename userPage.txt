@@ -15,72 +15,97 @@ COMPLETED FEATURES
 - **Concert Lists:** Backend routes are available to add and remove concerts from a user's attended, wishlist, and favorites lists.
 - **API Routes:** All the necessary API routes for user profiles, concert management, and social features have been created.
 
+COMPLETED PHASES
+================
+
+PHASE 1: Fix Concert Review Display Issue ✅
+-----------------------------------------
+**Problem:** Reviews weren't displaying when opening concert cards from attended page.
+**Solution:** Updated ConcertModal.jsx to use `event.seatgeekId` instead of `event.id`.
+
+PHASE 2: Add Concert to Lists from Catalog ✅
+------------------------------------------
+**Problem:** Users couldn't add concerts to lists from catalog.
+**Solution:** 
+- Fixed ID handling between MongoDB and SeatGeek
+- Created new endpoint to save individual events
+- Fixed data flow from catalog to user lists
+
+PHASE 3: Improve Catalog UX and Concert Filtering ✅
+-------------------------------------------------
+**Implemented:**
+- Loading overlay with "Adding..." message
+- Page refresh after successful addition
+- Date-based filtering (wishlist=future, attended/favorites=past)
+- Toast notifications instead of browser alerts
+- Confirmation dialog for removing concerts
+- Trash icon with better styling for remove buttons
+
+PHASE 4: Wishlist Concert Adding Fix ✅
+-------------------------------------
+**Problem:** Couldn't add upcoming concerts to wishlist.
+**Solution:** 
+- Created `/api/events/save` endpoint to save concerts before adding to lists
+- Fixed data transformation in CatalogModal
+- Better error handling for missing concert data
+
+-----------------
+
 IN-PROGRESS/TO-DO
 -----------------
 
-PHASE 1: Fix Concert Review Display Issue ✅ COMPLETED
------------------------------------------
-**Problem:** When opening a concert card from the attended page, reviews are not displayed even though they exist. This is because ConcertModal is looking for `event.id` but events from the database use `_id` and `seatgeekId`.
+### High Priority Features:
 
-**Solution Implemented:** Updated ConcertModal.jsx to use `event.seatgeekId` instead of `event.id` throughout the component.
+1. **Edit Profile Modal** 
+   - Create modal for users to edit their profile information
+   - Fields: bio, location, social links
+   - Already have backend endpoints ready
 
------------------
+2. **Posts System**
+   - Create Post model in backend
+   - API routes for CRUD operations on posts
+   - Frontend components for creating and viewing posts
+   - Like/comment functionality
+   - Post feed on user profiles
 
-PHASE 2: Add Concert to Lists from Catalog ✅ COMPLETED
-------------------------------------------
-**Problem:** Users can browse concerts in the catalog but cannot add them to their attended, wishlist, or favorites lists without going to their profile page.
+3. **Search Functionality**
+   - Frontend search bar to find users
+   - Display search results
+   - Backend route already exists at `/api/users/search`
 
-**Solution Implemented:** 
-- Fixed CatalogModal to preserve MongoDB _id correctly
-- Updated ProfileHeader handleConcertSelect to use correct concert ID
-- Added better error handling and debugging
+### Medium Priority Features:
 
------------------
+4. **Social Features Enhancement**
+   - Show follower/following lists
+   - Backend routes exist, need frontend implementation
 
-PHASE 3: Improve Catalog UX and Concert Filtering
--------------------------------------------------
-**Problem:** The catalog needs better user feedback and date-based filtering for concert tabs.
+5. **Concert Statistics**
+   - Display stats like total concerts attended
+   - Favorite artists based on attendance
+   - Concert history timeline
 
-**Requirements:**
-1. **Loading State**: When adding a concert, show "Adding..." loading screen
-2. **Page Refresh**: After successfully adding, refresh to show the updated lists
-3. **Date-based Tab Filtering**:
-   - Wishlist tab: Show only upcoming concerts (future dates)
-   - Attended tab: Show only past concerts
-   - Favorites tab: Show only past concerts
+### Lower Priority Features:
 
-**Current Issues:**
-- No visual feedback during the add operation
-- User doesn't see their lists update immediately
-- All concerts show in all tabs regardless of date
+6. **Notifications System**
+   - New follower notifications
+   - Post interactions (likes, comments)
+   - Concert buddy notifications
 
-**Solution Plan:**
-1. **Add Loading State to ProfileHeader**:
-   - Create loading overlay with "Adding..." message
-   - Show during API call
-   - Block user interaction while loading
+7. **Privacy Settings**
+   - Private/public profile toggle
+   - Control who can see concert lists
+   - Block users functionality
 
-2. **Implement Page Refresh**:
-   - After successful add, refresh the page
-   - This ensures profile data is up-to-date
-   - Shows the newly added concert in the appropriate list
+8. **UI/UX Polish**
+   - Better loading states throughout
+   - Skeleton loaders for content
+   - Improved mobile responsiveness
+   - Dark mode refinements
 
-3. **Update CatalogModal Concert Filtering**:
-   - Filter concerts based on selected tab and current date
-   - Wishlist: filter for datetime_local > now
-   - Attended/Favorites: filter for datetime_local <= now
-   - Update the filtered results when tab changes
-
-**Files to modify:**
-- `client/src/components/ProfileHeader.jsx` - Add loading state and refresh
-- `client/src/components/CatalogModal.jsx` - Add date-based filtering
-
------------------
-
-- **Frontend for Concert Lists:** While the backend is ready, the frontend components to display and manage the attended, wishlist, and favorites concert lists still need to be fully implemented.
-- **Posts System:** The entire posts system, from the `Post` model and API to the frontend components for creating, viewing, and interacting with posts, is yet to be built.
-- **Edit Profile Modal:** The modal for editing user profile information needs to be created.
-- **Search Functionality:** While a backend route for user search exists, the frontend implementation is pending.
-- **Notifications:** The notification system for events like new followers or post interactions has not been started.
-- **Privacy Settings:** The ability for users to make their profiles private is not yet implemented.
-- **Error Handling and UI Feedback:** Improve loading states, error messages, and provide better user feedback throughout the profile section.
+### Completed Recently:
+- ✅ Concert review display fix
+- ✅ Add concerts to lists from catalog
+- ✅ Loading states and toast notifications
+- ✅ Date-based filtering for concert tabs
+- ✅ Confirmation dialogs for destructive actions
+- ✅ Wishlist functionality for upcoming concerts
