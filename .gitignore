@@ -38,3 +38,6 @@ yarn-error.log*
 
 # Optional eslint cache
 .eslintcache
+
+# Claude configuration
+CLAUDE.md
