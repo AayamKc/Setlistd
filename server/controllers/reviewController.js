@@ -98,6 +98,11 @@ exports.getArtistRating = async (req, res) => {
     });
     
     if (events.length === 0) {
+      res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
       return res.json({ 
         artistName,
         averageRating: 0,
@@ -113,6 +118,11 @@ exports.getArtistRating = async (req, res) => {
     const reviews = await Review.find({ eventId: { $in: eventIds } });
     
     if (reviews.length === 0) {
+      res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
       return res.json({ 
         artistName,
         averageRating: 0,
@@ -124,6 +134,13 @@ exports.getArtistRating = async (req, res) => {
     // Calculate average rating
     const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
     const averageRating = totalRating / reviews.length;
+    
+    // Set no-cache headers to prevent stale data
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
     
     res.json({
       artistName,
