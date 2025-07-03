@@ -33,10 +33,6 @@ export const eventsAPI = {
   updateReview: (eventId, reviewId, data) => api.put(`/api/events/${eventId}/reviews/${reviewId}`, data),
   deleteReview: (eventId, reviewId) => api.delete(`/api/events/${eventId}/reviews/${reviewId}`),
   getArtistRating: (artistName) => api.get(`/api/artists/${encodeURIComponent(artistName)}/rating`, {
-    headers: {
-      'Cache-Control': 'no-cache',
-      'Pragma': 'no-cache'
-    },
     params: {
       _t: Date.now() // Cache buster
     }
