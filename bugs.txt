@@ -2,12 +2,11 @@ BUGS TRACKER
 ============
 
 whDate: 2025-07-03
-Status: 2 active bugs
+Status: 0 active bugs
 
 CURRENT BUGS
 -----------
-- Bug ID: B-004 - Artist ratings not showing on landing page concert cards (Medium)
-- Bug ID: B-005 - Date filter not loading past concerts properly (High)
+(No active bugs)
 
 BUG TEMPLATE
 -----------
@@ -293,6 +292,20 @@ The issue is environment-specific, working locally but failing in production. In
 
 FIXED ISSUES
 -----------
+- **Bug ID: B-005**
+  - **Date Discovered:** 2025-07-03
+  - **Date Fixed:** 2025-07-03
+  - **Severity:** High
+  - **Component:** Frontend/Backend
+  - **Description:** Date filter not loading past concerts properly on landing page.
+  - **Fix:** Implemented dual-source fetching from both SeatGeek API and saved events database. Added deduplication logic to merge results and show all concerts within date range.
+- **Bug ID: B-004**
+  - **Date Discovered:** 2025-07-03
+  - **Date Fixed:** 2025-07-03
+  - **Severity:** Medium
+  - **Component:** Frontend/API
+  - **Description:** Artist ratings not showing on landing page concert cards despite existing reviews.
+  - **Fix:** Removed Cache-Control headers from getArtistRating API call that were causing CORS preflight errors. The server only allowed Content-Type and Authorization headers.
 - **Bug ID: B-003**
   - **Date Discovered:** 2025-07-03
   - **Date Fixed:** 2025-07-03
