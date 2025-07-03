@@ -39,4 +39,23 @@ export const eventsAPI = {
   }),
 }
 
+export const usersAPI = {
+  searchUsers: (query) => api.get('/api/users/search', { params: { q: query } }),
+  getUserProfile: (username) => api.get(`/api/users/${username}`),
+  followUser: (userId) => api.put(`/api/users/${userId}/follow`),
+  unfollowUser: (userId) => api.put(`/api/users/${userId}/unfollow`),
+}
+
+export const postsAPI = {
+  createPost: (data) => api.post('/api/posts', data),
+  getFeed: (params) => api.get('/api/posts/feed', { params }),
+  getUserPosts: (userId, params) => api.get(`/api/posts/user/${userId}`, { params }),
+  getPost: (postId) => api.get(`/api/posts/${postId}`),
+  updatePost: (postId, data) => api.put(`/api/posts/${postId}`, data),
+  deletePost: (postId) => api.delete(`/api/posts/${postId}`),
+  toggleLike: (postId) => api.post(`/api/posts/${postId}/like`),
+  addComment: (postId, data) => api.post(`/api/posts/${postId}/comments`, data),
+  deleteComment: (postId, commentId) => api.delete(`/api/posts/${postId}/comments/${commentId}`),
+}
+
 export default api

@@ -4,6 +4,7 @@ import { supabase } from '../utils/supabase'
 import { useNavigate } from 'react-router-dom'
 import LoginModal from './LoginModal'
 import FilterModal from './FilterModal'
+import UserSearchBar from './UserSearchBar'
 
 const Header = ({ onSearch, onFilterChange, onLogoClick, initialFilters = {} }) => {
   const { user } = useAuth()
@@ -117,8 +118,14 @@ const Header = ({ onSearch, onFilterChange, onLogoClick, initialFilters = {} }) 
                 </>
               )}
               
-              {/* Compact Search */}
+              {/* Search Section */}
               <div className="flex items-center space-x-2">
+                {/* User Search */}
+                <div className="w-48">
+                  <UserSearchBar />
+                </div>
+
+                {/* Concert Search */}
                 <form onSubmit={handleSearch} className="relative">
                   <input
                     type="text"
@@ -130,7 +137,7 @@ const Header = ({ onSearch, onFilterChange, onLogoClick, initialFilters = {} }) 
                         handleSearch(e)
                       }
                     }}
-                    className="w-64 bg-gray-800 text-white pl-4 pr-10 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-56 bg-gray-800 text-white pl-4 pr-10 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                   <button type="submit" className="absolute right-0 top-0 h-full w-10 flex items-center justify-center text-primary rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

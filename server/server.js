@@ -9,6 +9,7 @@ const { protect } = require('./middleware/authMiddleware'); // Auth middleware
 const reviewRoutes = require('./routes/reviewRoutes');
 const artistRoutes = require('./routes/artistRoutes');
 const userRoutes = require('./routes/userRoutes');
+const postRoutes = require('./routes/postRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -42,6 +43,9 @@ app.use('/api/artists', artistRoutes);
 
 // User Routes
 app.use('/api/users', userRoutes);
+
+// Post Routes
+app.use('/api/posts', postRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

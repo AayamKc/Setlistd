@@ -57,6 +57,14 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Event',
   }],
+  posts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post',
+  }],
+  postsCount: {
+    type: Number,
+    default: 0,
+  },
   isPrivate: {
     type: Boolean,
     default: false,
