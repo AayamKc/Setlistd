@@ -74,9 +74,19 @@ const updateUserProfile = async (req, res) => {
 // Upload profile picture
 const uploadProfilePicture = async (req, res) => {
   try {
+    console.log('Profile picture upload request received');
+    console.log('User:', req.user?.id);
+    console.log('File:', req.file ? 'Present' : 'Missing');
+    
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
+
+    console.log('File details:', {
+      fieldname: req.file.fieldname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    });
 
     const userId = req.user.id;
     const publicUrl = await uploadToSupabase(req.file, 'profile-images', userId);
@@ -90,16 +100,27 @@ const uploadProfilePicture = async (req, res) => {
     res.json({ profilePicture: publicUrl });
   } catch (error) {
     console.error('Error uploading profile picture:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Full error details:', error.stack);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 // Upload banner image
 const uploadBannerImage = async (req, res) => {
   try {
+    console.log('Banner image upload request received');
+    console.log('User:', req.user?.id);
+    console.log('File:', req.file ? 'Present' : 'Missing');
+    
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
+
+    console.log('File details:', {
+      fieldname: req.file.fieldname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    });
 
     const userId = req.user.id;
     const publicUrl = await uploadToSupabase(req.file, 'banner-images', userId);
@@ -113,7 +134,8 @@ const uploadBannerImage = async (req, res) => {
     res.json({ bannerImage: publicUrl });
   } catch (error) {
     console.error('Error uploading banner image:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Full error details:', error.stack);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
