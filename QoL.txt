@@ -1,0 +1,10 @@
+Critical Production errors: Need to update bugs.txt
+
+1. CANNOT LEAVE REVIEWS ON LANDING PAGE... ADDTIONALLY, THE DATE FILTER DOES NOT CORRECLTY LOAD PAST CONCERTS IF YOU SET THE FILTER MANUALLY BACK IN TIME
+    - it is critical that users can leave reviews on the landing page and have them appear on their user page if they do. This is a core function
+   
+
+2.  Upload progile image feature is broken. Can upload when server is running locally, but not when we use vercel with the render backed endpoint
+
+
+Part one is a critical bug while part 2 is a moderate bug. Will address both tomorrow

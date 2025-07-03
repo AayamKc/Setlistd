@@ -28,16 +28,23 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   };
 
   useEffect(() => {
+    console.log('ConcertModal useEffect - event data:', event);
+    console.log('ConcertModal useEffect - seatgeekId:', event?.seatgeekId);
+    
     if (isOpen && event && event.seatgeekId) {
       const fetchReviews = async () => {
         try {
+          console.log('Fetching reviews for seatgeekId:', event.seatgeekId);
           const response = await eventsAPI.getEventReviews(event.seatgeekId);
+          console.log('Reviews fetched:', response.data);
           setExistingReviews(response.data);
         } catch (error) {
           console.error('Error fetching reviews:', error);
         }
       };
       fetchReviews();
+    } else {
+      console.log('Not fetching reviews - missing data:', { isOpen, hasEvent: !!event, seatgeekId: event?.seatgeekId });
     }
   }, [isOpen, event]);
 
@@ -56,6 +63,9 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('handleSubmit - event data:', event);
+    console.log('handleSubmit - seatgeekId:', event?.seatgeekId);
+    
     if (!user) {
       setShowLoginModal(true);
       return;
@@ -67,8 +77,14 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       return;
     }
     
+    if (!event.seatgeekId) {
+      console.error('No seatgeekId found in event:', event);
+      alert('Unable to submit review - missing event ID');
+      return;
+    }
+    
     setIsSubmitting(true);
-    console.log('Submitting review, isSubmitting:', true);
+    console.log('Submitting review for seatgeekId:', event.seatgeekId);
     
     try {
       await eventsAPI.submitReview(event.seatgeekId, { rating, reviewText: review });
