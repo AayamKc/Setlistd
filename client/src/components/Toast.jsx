@@ -2,12 +2,14 @@ import { useEffect } from 'react'
 
 const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {
   useEffect(() => {
+    // Shorter duration for error messages
+    const effectiveDuration = type === 'error' ? 2000 : duration
     const timer = setTimeout(() => {
       onClose()
-    }, duration)
+    }, effectiveDuration)
 
     return () => clearTimeout(timer)
-  }, [duration, onClose])
+  }, [duration, onClose, type])
 
   const getToastStyles = () => {
     switch (type) {
@@ -33,7 +35,7 @@ const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {
       case 'error':
         return (
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         )
       case 'info':
@@ -53,14 +55,6 @@ const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {
         {getIcon()}
       </div>
       <span className="text-sm font-medium">{message}</span>
-      <button
-        onClick={onClose}
-        className="ml-auto flex-shrink-0 hover:opacity-70 transition-opacity"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
     </div>
   )
 }

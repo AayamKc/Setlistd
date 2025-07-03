@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import LoginModal from './LoginModal';
 import { eventsAPI } from '../utils/api';
 import confetti from 'canvas-confetti';
+import Toast from './Toast';
 
 const ConcertModal = ({ isOpen, onClose, event }) => {
   const { user } = useAuth();
@@ -18,6 +19,8 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
   const [editingText, setEditingText] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [hoveredReviewId, setHoveredReviewId] = useState(null);
+  const [userHasReviewed, setUserHasReviewed] = useState(false);
+  const [toast, setToast] = useState(null);
   
   // Check if concert has already happened
   const isEventInPast = () => {
@@ -38,6 +41,12 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
           const response = await eventsAPI.getEventReviews(event.seatgeekId);
           console.log('Reviews fetched:', response.data);
           setExistingReviews(response.data);
+          
+          // Check if current user has already reviewed
+          if (user && response.data.length > 0) {
+            const userReview = response.data.find(review => review.userId === user.id);
+            setUserHasReviewed(!!userReview);
+          }
         } catch (error) {
           console.error('Error fetching reviews:', error);
         }
@@ -46,7 +55,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
     } else {
       console.log('Not fetching reviews - missing data:', { isOpen, hasEvent: !!event, seatgeekId: event?.seatgeekId });
     }
-  }, [isOpen, event]);
+  }, [isOpen, event, user]);
 
   if (!isOpen) return null;
 
@@ -73,13 +82,13 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
     
     // Validate rating
     if (rating === 0) {
-      alert('Please select a rating');
+      setToast({ message: 'Please select a rating', type: 'error' });
       return;
     }
     
     if (!event.seatgeekId) {
       console.error('No seatgeekId found in event:', event);
-      alert('Unable to submit review - missing event ID');
+      setToast({ message: 'Unable to submit review - missing event ID', type: 'error' });
       return;
     }
     
@@ -103,6 +112,9 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       setRating(0);
       setReview('');
       
+      // Mark that user has reviewed
+      setUserHasReviewed(true);
+      
       // Hide success message after 3 seconds and refresh the page
       setTimeout(() => {
         setShowSuccessMessage(false);
@@ -113,7 +125,15 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert('Failed to submit review.');
+      let errorMessage = 'Failed to submit review';
+      
+      if (error.response?.status === 400 && error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Review failed to submit: server issue';
+      }
+      
+      setToast({ message: errorMessage, type: 'error' });
       setIsSubmitting(false);
     }
   };
@@ -126,7 +146,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
 
   const handleUpdateReview = async (reviewId) => {
     if (editingRating === 0) {
-      alert('Please select a rating');
+      setToast({ message: 'Please select a rating', type: 'error' });
       return;
     }
 
@@ -152,7 +172,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       }, 500);
     } catch (error) {
       console.error('Error updating review:', error);
-      alert('Failed to update review.');
+      setToast({ message: 'Failed to update review', type: 'error' });
     }
   };
 
@@ -165,6 +185,14 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       const response = await eventsAPI.getEventReviews(event.seatgeekId);
       setExistingReviews(response.data);
       
+      // Check if user still has a review after deletion
+      if (user && response.data.length > 0) {
+        const userReview = response.data.find(review => review.userId === user.id);
+        setUserHasReviewed(!!userReview);
+      } else {
+        setUserHasReviewed(false);
+      }
+      
       // Close confirmation dialog
       setShowDeleteConfirm(null);
       
@@ -174,7 +202,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
       }, 500);
     } catch (error) {
       console.error('Error deleting review:', error);
-      alert('Failed to delete review.');
+      setToast({ message: 'Failed to delete review', type: 'error' });
     }
   };
 
@@ -219,13 +247,14 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
         </div>
         <div className="p-6">
           <img src={getArtistImage()} alt={getArtistName()} className="w-full h-64 object-cover rounded-lg mb-6" />
-          {!isEventInPast() && (
+          {!isEventInPast() && !userHasReviewed && (
             <div className="bg-yellow-200 bg-opacity-20 border border-yellow-300 text-yellow-200 px-4 py-3 rounded-lg mb-6">
               <p className="text-sm font-semibold">This concert has not happened yet.</p>
               <p className="text-sm">Reviews can only be submitted after the concert has taken place.</p>
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {!userHasReviewed && (
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="text-lg font-semibold text-white block mb-2">Your Rating</label>
               <div className="flex items-center">
@@ -264,6 +293,7 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
               </button>
             </div>
           </form>
+          )}
 
           <div className="mt-8">
             <h3 className="text-xl font-bold text-primary mb-4">Reviews</h3>
@@ -271,7 +301,15 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
               <p className="text-gray-400">No reviews yet. Be the first to leave one!</p>
             ) : (
               <div className="space-y-4">
-                {existingReviews.map((rev) => (
+                {[...existingReviews]
+                  .sort((a, b) => {
+                    // Put current user's review at the top
+                    if (user && a.userId === user.id) return -1;
+                    if (user && b.userId === user.id) return 1;
+                    // Maintain original order for other reviews
+                    return 0;
+                  })
+                  .map((rev) => (
                   <div 
                     key={rev._id} 
                     className="bg-gray-800 p-4 rounded-lg relative"
@@ -385,6 +423,15 @@ const ConcertModal = ({ isOpen, onClose, event }) => {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );
