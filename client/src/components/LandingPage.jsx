@@ -65,22 +65,56 @@ const LandingPage = () => {
         params.q = 'concert'
       }
 
-      
       console.log('Fetching events with params:', params)
       console.log('Query:', query)
       console.log('Filter params:', filterParams)
 
-     
-      const response = await eventsAPI.searchEvents(params)
-      setEvents(response.data.events || [])
+      // Fetch from both sources in parallel
+      const [seatgeekResponse, savedResponse] = await Promise.all([
+        eventsAPI.searchEvents(params),
+        eventsAPI.getSavedEvents(params)
+      ])
+
+      // Combine events from both sources
+      const seatgeekEvents = seatgeekResponse.data.events || []
+      const savedEvents = savedResponse.data.events || []
       
-      // Handle SeatGeek API pagination format
-      const meta = response.data.meta || {}
+      // Create a map to deduplicate by seatgeekId
+      const eventMap = new Map()
+      
+      // Add SeatGeek events first (they have more up-to-date info)
+      seatgeekEvents.forEach(event => {
+        const id = event.seatgeekId || event.id
+        if (id) {
+          eventMap.set(id, { ...event, seatgeekId: id })
+        }
+      })
+      
+      // Add saved events that don't already exist
+      savedEvents.forEach(event => {
+        const id = event.seatgeekId
+        if (id && !eventMap.has(id)) {
+          eventMap.set(id, event)
+        }
+      })
+      
+      // Convert map back to array and sort by date
+      const combinedEvents = Array.from(eventMap.values()).sort((a, b) => 
+        new Date(a.datetime_local) - new Date(b.datetime_local)
+      )
+      
+      setEvents(combinedEvents)
+      
+      // Use the larger total for pagination
+      const seatgeekMeta = seatgeekResponse.data.meta || {}
+      const savedMeta = savedResponse.data.meta || {}
+      const totalEvents = Math.max(seatgeekMeta.total || 0, savedMeta.total || 0)
+      
       setPagination({
         page: Number(page),
         limit: pagination.limit,
-        total: meta.total || 0,
-        pages: Math.ceil((meta.total || 0) / pagination.limit)
+        total: totalEvents,
+        pages: Math.ceil(totalEvents / pagination.limit)
       })
     } catch (err) {
       console.error('Error fetching events:', err)
@@ -106,6 +140,10 @@ const LandingPage = () => {
   useEffect(() => {
     // Fetch events based on initial URL params
     const filterParams = mapFiltersToParams(filters)
+    // If no from_date in URL params, use today's date for initial load
+    if (!searchParams.get('from_date') && !filterParams.from_date) {
+      filterParams.from_date = getTodayDate()
+    }
     fetchEvents(searchQuery, filterParams, pagination.page)
   }, [])
 
@@ -120,6 +158,10 @@ const LandingPage = () => {
 
   const handleFilterChange = (newFilters) => {
     console.log('Filter change received:', newFilters)
+    console.log('Current date:', new Date().toISOString().split('T')[0])
+    console.log('From date:', newFilters.from_date)
+    console.log('To date:', newFilters.to_date)
+    
     setFilters(newFilters)
     setPagination(prev => ({ ...prev, page: 1 }))
     updateURLParams(searchQuery, newFilters, 1)

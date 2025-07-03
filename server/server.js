@@ -236,6 +236,71 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
+// Get saved events from database with filtering
+app.get('/api/saved-events', async (req, res) => {
+  try {
+    const { 
+      page = 1, 
+      per_page = 20,
+      city,
+      from_date,
+      to_date,
+      q
+    } = req.query;
+    
+    // Build query
+    const query = {};
+    
+    // Date filtering
+    if (from_date || to_date) {
+      query.datetime_local = {};
+      if (from_date) {
+        query.datetime_local.$gte = new Date(from_date);
+      }
+      if (to_date) {
+        query.datetime_local.$lte = new Date(to_date + 'T23:59:59');
+      }
+    }
+    
+    // City filtering
+    if (city) {
+      query['venue.city'] = new RegExp(city, 'i');
+    }
+    
+    // Text search
+    if (q) {
+      query.$or = [
+        { title: new RegExp(q, 'i') },
+        { 'performers.name': new RegExp(q, 'i') },
+        { 'venue.name': new RegExp(q, 'i') }
+      ];
+    }
+    
+    const skip = (page - 1) * per_page;
+    const limit = parseInt(per_page);
+    
+    const [events, total] = await Promise.all([
+      Event.find(query)
+        .sort({ datetime_local: 1 })
+        .skip(skip)
+        .limit(limit),
+      Event.countDocuments(query)
+    ]);
+    
+    res.json({
+      events,
+      meta: {
+        total,
+        page: parseInt(page),
+        per_page: limit
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching saved events:', error);
+    res.status(500).json({ error: 'Failed to fetch saved events' });
+  }
+});
+
 // Save a single event to database
 app.post('/api/events/save', async (req, res) => {
   try {

@@ -1,13 +1,13 @@
 BUGS TRACKER
 ============
 
-Date: 2025-07-03
+whDate: 2025-07-03
 Status: 2 active bugs
 
 CURRENT BUGS
 -----------
-- Bug ID: B-002 - Review submission on landing page not working (Critical)
-- Bug ID: B-003 - Profile image upload broken in production (Medium)
+- Bug ID: B-004 - Artist ratings not showing on landing page concert cards (Medium)
+- Bug ID: B-005 - Date filter not loading past concerts properly (High)
 
 BUG TEMPLATE
 -----------
@@ -40,6 +40,47 @@ CATEGORIES
 
 ACTIVE BUGS DETAILS
 ------------------
+**Bug ID: B-004**
+- **Date Discovered:** 2025-07-03
+- **Severity:** Medium
+- **Component:** Frontend/API
+- **Description:** Artist ratings show as "No reviews yet" on landing page concert cards even when the artist has reviews
+- **Steps to Reproduce:**
+  1. Navigate to landing page
+  2. View concert cards for artists that have reviews
+  3. Notice ratings show as "No reviews yet"
+  4. Navigate to user profile and see same concert shows correct rating
+- **Expected Behavior:** Concert cards should show consistent artist ratings across all pages
+- **Actual Behavior:** Landing page shows "No reviews yet" while user pages show correct ratings
+- **Status:** Open
+- **Notes:** The getArtistRating API call may be failing or returning incorrect data
+
+**Bug ID: B-005**
+- **Date Discovered:** 2025-07-03
+- **Severity:** High
+- **Component:** Frontend/API
+- **Description:** Date filter fails to load past concerts when set to earlier dates
+- **Steps to Reproduce:**
+  1. Navigate to landing page
+  2. Set date filter to a past date range
+  3. Only one concert from June 6 loads
+  4. Check user profiles - many more past concerts exist
+- **Expected Behavior:** All concerts within the selected date range should load
+- **Actual Behavior:** Only loads one past concert despite many existing in the database
+- **Status:** Open
+- **Notes:** SeatGeek API date filtering parameters may not be working correctly
+
+**Root Cause Analysis:**
+1. **Artist Rating Issue:** The ConcertCard component fetches ratings individually for each card, which may be causing:
+   - Race conditions or API rate limiting
+   - Caching issues where stale data shows "No reviews yet"
+   - The getArtistRating endpoint may have different behavior based on context
+
+2. **Date Filter Issue:** The landing page uses SeatGeek API directly with date filters:
+   - The 'datetime_local.gte' and 'datetime_local.lte' parameters may not be working as expected
+   - SeatGeek API might have limitations on querying past events
+   - The default from_date is set to today, which may interfere with past date queries
+
 **Bug ID: B-002**
 - **Date Discovered:** 2025-07-03
 - **Severity:** Critical
@@ -252,6 +293,20 @@ The issue is environment-specific, working locally but failing in production. In
 
 FIXED ISSUES
 -----------
+- **Bug ID: B-003**
+  - **Date Discovered:** 2025-07-03
+  - **Date Fixed:** 2025-07-03
+  - **Severity:** Medium
+  - **Component:** Backend/Storage
+  - **Description:** Profile image upload broken in production (Vercel + Render).
+  - **Fix:** Issue resolved after server restart. Likely was a temporary connectivity or caching issue between Render and Supabase.
+- **Bug ID: B-002**
+  - **Date Discovered:** 2025-07-03
+  - **Date Fixed:** 2025-07-03
+  - **Severity:** Critical
+  - **Component:** Frontend/Reviews
+  - **Description:** Review submission on landing page not working.
+  - **Fix:** Issue appears to be resolved. Reviews can now be submitted from the landing page.
 - **Bug ID: B-001**
   - **Date Discovered:** 2025-07-01
   - **Date Fixed:** 2025-07-02
