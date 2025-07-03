@@ -1,12 +1,13 @@
 BUGS TRACKER
 ============
 
-Date: 2025-07-02
-Status: All bugs resolved
+Date: 2025-07-03
+Status: 2 active bugs
 
 CURRENT BUGS
 -----------
-- None
+- Bug ID: B-002 - Review submission on landing page not working (Critical)
+- Bug ID: B-003 - Profile image upload broken in production (Medium)
 
 BUG TEMPLATE
 -----------
@@ -36,6 +37,218 @@ CATEGORIES
 - Mobile Responsiveness
 - API Errors
 - State Management Bugs
+
+ACTIVE BUGS DETAILS
+------------------
+**Bug ID: B-002**
+- **Date Discovered:** 2025-07-03
+- **Severity:** Critical
+- **Component:** Frontend/Reviews
+- **Description:** Cannot leave reviews on landing page. Additionally, the date filter does not correctly load past concerts if you set the filter manually back in time.
+- **Steps to Reproduce:**
+  1. Navigate to landing page
+  2. Attempt to submit a review
+  3. Review does not appear on user page
+  4. Set date filter to past date
+  5. Past concerts do not load correctly
+- **Expected Behavior:** Reviews submitted on landing page should appear on user's profile page. Date filter should correctly load past concerts when set to earlier dates.
+- **Actual Behavior:** Reviews submitted on landing page do not appear on user profiles. Date filter fails to load past concerts when manually set back in time.
+- **Status:** Open
+- **Notes:** This is a core function that is critical for user engagement
+
+**Root Cause Analysis:**
+1. **Review Submission Issue:** The seatgeekId field mapping was supposedly fixed in commit 7237a7d, but the issue persists. Investigation shows:
+   - The fix adds seatgeekId to events returned from SeatGeek API
+   - However, there may be a race condition or the fix is not being applied consistently
+   - The ConcertModal expects event.seatgeekId (line 80 in ConcertModal.jsx)
+   - Events from SeatGeek API have event.id, not event.seatgeekId natively
+
+2. **Date Filter Issue:** The date filter uses 'datetime_local.gte' and 'datetime_local.lte' parameters for SeatGeek API:
+   - Default from_date is set to today (LandingPage.jsx line 23)
+   - This prevents loading past concerts by default
+   - When manually setting past dates, the filter may not be properly clearing or updating
+
+**Detailed Fix Steps:**
+
+1. **Fix Review Submission:**
+   ```javascript
+   // In server/server.js, ensure seatgeekId mapping is consistent
+   // Update lines 214-217 and 226-229 to also handle edge cases:
+   
+   response.data.events = response.data.events.map(event => ({
+     ...event,
+     seatgeekId: event.seatgeekId || event.id, // Handle both cases
+     id: event.id // Preserve original id
+   }));
+   ```
+
+2. **Fix Date Filter for Past Concerts:**
+   ```javascript
+   // In client/src/components/LandingPage.jsx
+   // Remove default from_date (line 23) to allow viewing all concerts:
+   const [filters, setFilters] = useState({
+     city: searchParams.get('city') || '',
+     from_date: searchParams.get('from_date') || '', // Don't default to today
+     to_date: searchParams.get('to_date') || ''
+   })
+   
+   // Add a separate state for showing only upcoming concerts
+   const [showUpcomingOnly, setShowUpcomingOnly] = useState(true);
+   
+   // Update fetchEvents to handle this:
+   const filterParams = mapFiltersToParams(filters);
+   if (showUpcomingOnly && !filterParams.from_date) {
+     filterParams.from_date = getTodayDate();
+   }
+   ```
+
+3. **Alternative Quick Fix for Reviews:**
+   ```javascript
+   // In client/src/components/ConcertModal.jsx (line 80)
+   // Change the check to handle both field names:
+   if (!event.seatgeekId && !event.id) {
+     console.error('No event ID found in event:', event);
+     alert('Unable to submit review - missing event ID');
+     return;
+   }
+   
+   // Line 90, use fallback:
+   await eventsAPI.submitReview(event.seatgeekId || event.id, { rating, reviewText: review });
+   ```
+
+**Testing Instructions:**
+1. Test review submission from landing page with fresh SeatGeek events
+2. Test date filter by setting past date range and verifying concerts load
+3. Verify reviews appear on user profile after submission
+4. Test with both logged-in and guest users (should prompt login)
+
+**Bug ID: B-003**
+- **Date Discovered:** 2025-07-03
+- **Severity:** Medium
+- **Component:** Backend/Storage
+- **Description:** Upload profile image feature is broken. Can upload when server is running locally, but not when using Vercel with the Render backend endpoint.
+- **Steps to Reproduce:**
+  1. Deploy application using Vercel frontend and Render backend
+  2. Navigate to profile settings
+  3. Attempt to upload a profile image
+  4. Upload fails
+- **Expected Behavior:** Profile image uploads should work in production environment
+- **Actual Behavior:** Profile image uploads only work locally, fail in production (Vercel + Render)
+- **Status:** Open
+- **Notes:** Works locally but fails in production environment
+
+**Root Cause Analysis:**
+The issue is environment-specific, working locally but failing in production. Investigation reveals several potential causes:
+
+1. **Environment Variables:** 
+   - Render may be missing or have incorrect `SUPABASE_SERVICE_ROLE_KEY`
+   - The service role key is required for server-side uploads to Supabase storage
+
+2. **CORS Configuration:**
+   - Production frontend URL may not be properly whitelisted in server CORS settings
+   - Preflight requests for file uploads may be blocked
+
+3. **Supabase Storage Policies:**
+   - Storage buckets may have different RLS policies in production
+   - Public access may not be properly configured
+
+4. **API Base URL:**
+   - Frontend may not be correctly pointing to Render backend URL for uploads
+
+**Detailed Fix Steps:**
+
+1. **Verify Environment Variables in Render:**
+   ```bash
+   # Check these are set in Render dashboard:
+   SUPABASE_URL=<your-supabase-url>
+   SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+   SEATGEEK_CLIENT_ID=<your-client-id>
+   SEATGEEK_CLIENT_SECRET=<your-client-secret>
+   ```
+
+2. **Update CORS Configuration in server/server.js:**
+   ```javascript
+   // Ensure production URLs are included (around line 35)
+   const corsOptions = {
+     origin: [
+       'http://localhost:5173',
+       'http://localhost:5174',
+       'https://your-vercel-app.vercel.app', // Add your Vercel URL
+       'https://setlistd.vercel.app', // Add any custom domains
+     ],
+     credentials: true,
+     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allowedHeaders: ['Content-Type', 'Authorization'],
+   };
+   ```
+
+3. **Fix Supabase Storage Bucket Policies:**
+   ```sql
+   -- In Supabase dashboard, run these SQL commands:
+   
+   -- Enable public access for profile-images bucket
+   UPDATE storage.buckets 
+   SET public = true 
+   WHERE name = 'profile-images';
+   
+   -- Enable public access for banner-images bucket  
+   UPDATE storage.buckets 
+   SET public = true 
+   WHERE name = 'banner-images';
+   
+   -- Create RLS policy for authenticated uploads
+   CREATE POLICY "Allow authenticated uploads" ON storage.objects
+   FOR INSERT TO authenticated
+   USING (bucket_id IN ('profile-images', 'banner-images'));
+   
+   -- Create RLS policy for public viewing
+   CREATE POLICY "Allow public viewing" ON storage.objects
+   FOR SELECT TO public
+   USING (bucket_id IN ('profile-images', 'banner-images'));
+   ```
+
+4. **Update Frontend API Configuration:**
+   ```javascript
+   // In client/src/utils/api.js or environment config
+   // Ensure production backend URL is used:
+   const API_BASE_URL = import.meta.env.VITE_API_URL || 
+     (import.meta.env.PROD 
+       ? 'https://your-render-backend.onrender.com' 
+       : 'http://localhost:3000');
+   ```
+
+5. **Add Debug Logging to Upload Middleware:**
+   ```javascript
+   // In server/middleware/uploadMiddleware.js (uploadToSupabase function)
+   console.log('Upload attempt:', {
+     bucketName,
+     fileName,
+     fileSize: file.buffer.length,
+     supabaseUrl: process.env.SUPABASE_URL ? 'Set' : 'Missing',
+     serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Missing'
+   });
+   ```
+
+6. **Alternative Solution - Direct Frontend Upload:**
+   ```javascript
+   // If backend upload continues to fail, implement direct frontend upload:
+   // In ProfileHeader.jsx, add direct Supabase upload:
+   
+   const { data, error } = await supabase.storage
+     .from('profile-images')
+     .upload(`${user.id}/${file.name}`, file, {
+       cacheControl: '3600',
+       upsert: true
+     });
+   ```
+
+**Testing Instructions:**
+1. Deploy updated code to Render with correct environment variables
+2. Check Render logs for any error messages during upload attempts
+3. Verify CORS by checking browser console for preflight errors
+4. Test with small image files first (< 1MB)
+5. Check Supabase dashboard logs for any storage errors
+6. Verify the storage buckets exist and have proper permissions
 
 FIXED ISSUES
 -----------
