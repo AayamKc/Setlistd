@@ -1,12 +1,6 @@
-1. Once users leave a review, the review options at the top should no longer be present. There are already in line tools that let them update or delete their review
- - they can have the option to leave a a review again once they have deleted
+1. When a user uses the search bar, they should not be able to search up themselves
 
- 2. At the moment, a user gets a notification that something failed to upload, there are 2 X's that appear. One on the left and one on the right. Design wise, I don't like the way it looks. Theere should be no X's
-    simply, a pop up should come up that there was a failure to uplaod an image/profile picture and it should disspear on its own relatively quickly
+2. When the user tries to delete a post, they get a confirmation, which is good. the issue is that it is a broswer notification and not a nice UI like a toast notification. 
 
-3. when a user fails to leave or update a review, they get a wanring in their browswer as a popup.  which is unhelpful
-    when a user fails to leave a review and it is the fault of the server. It should say review failed to submit: server issue. and not in the browser pop up. It should be a nice UI element. 
-    when a user fails to leave a review an artist, there should be an inline error saying already reviewed although if the first issue is addressed, this one should no longer be an issue.
-    
-    
-After these issues are dealt with, posts can finally be developed
+3. Users cannot currenly upload photos with posts. Do I need to create a bucket for this in supabase? If so, let me know what bucket and what permissions I have to enable. 
+
