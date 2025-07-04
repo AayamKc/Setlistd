@@ -1,23 +1,4 @@
-1. When a user uses the search bar, they should not be able to search up themselves
-
-**Solution**: 
-- Modify the backend `/api/users/search` endpoint to filter out the current user ID from search results
-- Add a condition: `{ _id: { $ne: req.user.id } }` to the MongoDB query in `/server/routes/userRoutes.js`
-- This ensures the authenticated user never appears in their own search results
-- No frontend changes needed as the filtering happens server-side
-
-2. When the user tries to delete a post, they get a confirmation, which is good. the issue is that it is a broswer notification and not a nice UI like a toast notification. 
-
-**Solution**:
-- Replace all `window.confirm()` and `alert()` calls with a custom confirmation modal
-- Create a reusable `ConfirmationModal` component at `/client/src/components/ConfirmationModal.jsx`
-- The modal should:
-  - Accept props: `isOpen`, `onClose`, `onConfirm`, `title`, `message`
-  - Display a backdrop and centered modal with Cancel/Confirm buttons
-  - Use existing Toast component for success/error notifications after actions
-- Update all deletion handlers to use state-based modal instead of browser dialogs
-
-3. Users cannot currenly upload photos with posts. Do I need to create a bucket for this in supabase? If so, let me know what bucket and what permissions I have to enable.
+ Users cannot currenly upload photos with posts. Do I need to create a bucket for this in supabase? If so, let me know what bucket and what permissions I have to enable.
 
 **Solution**:
 - **Supabase Bucket Setup**: Create a bucket named `post-images` with:

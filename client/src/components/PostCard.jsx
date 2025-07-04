@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { postsAPI } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 import Toast from './Toast'
+import ConfirmationModal from './ConfirmationModal'
 
 const PostCard = ({ post, onDelete }) => {
   const navigate = useNavigate()
@@ -14,6 +15,7 @@ const PostCard = ({ post, onDelete }) => {
   const [comments, setComments] = useState(post.comments || [])
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [toast, setToast] = useState(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const isOwner = user && (user.id === post.userId?._id || user.id === post.userId)
 
@@ -35,14 +37,13 @@ const PostCard = ({ post, onDelete }) => {
   const handleDelete = async () => {
     if (!isOwner) return
     
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      try {
-        await postsAPI.deletePost(post._id)
-        if (onDelete) onDelete(post._id)
-      } catch (error) {
-        console.error('Error deleting post:', error)
-        setToast({ message: 'Failed to delete post', type: 'error' })
-      }
+    try {
+      await postsAPI.deletePost(post._id)
+      if (onDelete) onDelete(post._id)
+      setToast({ message: 'Post deleted successfully', type: 'success' })
+    } catch (error) {
+      console.error('Error deleting post:', error)
+      setToast({ message: 'Failed to delete post', type: 'error' })
     }
   }
 
@@ -100,6 +101,14 @@ const PostCard = ({ post, onDelete }) => {
           />
         </div>
       )}
+      
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Post"
+        message="Are you sure you want to delete this post? This action cannot be undone."
+      />
       <div className="bg-secondary rounded-lg border border-primary shadow-md p-6 mb-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -125,7 +134,7 @@ const PostCard = ({ post, onDelete }) => {
         
         {isOwner && (
           <button
-            onClick={handleDelete}
+            onClick={() => setShowDeleteConfirm(true)}
             className="text-gray-500 hover:text-red-500 transition-colors"
             title="Delete post"
           >
