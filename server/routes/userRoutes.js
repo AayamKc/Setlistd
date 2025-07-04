@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect: authMiddleware } = require('../middleware/authMiddleware');
+const { protect: authMiddleware, optionalAuth } = require('../middleware/authMiddleware');
 const ensureMongoUser = require('../middleware/ensureMongoUser');
 const { uploadProfile } = require('../middleware/uploadMiddleware');
 const {
@@ -35,8 +35,8 @@ router.post('/init', authMiddleware, ensureMongoUser, (req, res) => {
   res.json({ message: 'User initialized', user: req.mongoUser });
 });
 
-// Public routes
-router.get('/search', searchUsers);
+// Public routes (with optional auth for search)
+router.get('/search', optionalAuth, searchUsers);
 router.get('/:username', getUserProfile);
 router.get('/:userId/followers', getUserFollowers);
 router.get('/:userId/following', getUserFollowing);

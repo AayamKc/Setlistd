@@ -1,6 +1,36 @@
 1. When a user uses the search bar, they should not be able to search up themselves
 
+**Solution**: 
+- Modify the backend `/api/users/search` endpoint to filter out the current user ID from search results
+- Add a condition: `{ _id: { $ne: req.user.id } }` to the MongoDB query in `/server/routes/userRoutes.js`
+- This ensures the authenticated user never appears in their own search results
+- No frontend changes needed as the filtering happens server-side
+
 2. When the user tries to delete a post, they get a confirmation, which is good. the issue is that it is a broswer notification and not a nice UI like a toast notification. 
 
-3. Users cannot currenly upload photos with posts. Do I need to create a bucket for this in supabase? If so, let me know what bucket and what permissions I have to enable. 
+**Solution**:
+- Replace all `window.confirm()` and `alert()` calls with a custom confirmation modal
+- Create a reusable `ConfirmationModal` component at `/client/src/components/ConfirmationModal.jsx`
+- The modal should:
+  - Accept props: `isOpen`, `onClose`, `onConfirm`, `title`, `message`
+  - Display a backdrop and centered modal with Cancel/Confirm buttons
+  - Use existing Toast component for success/error notifications after actions
+- Update all deletion handlers to use state-based modal instead of browser dialogs
+
+3. Users cannot currenly upload photos with posts. Do I need to create a bucket for this in supabase? If so, let me know what bucket and what permissions I have to enable.
+
+**Solution**:
+- **Supabase Bucket Setup**: Create a bucket named `post-images` with:
+  - Public bucket: Yes (for easy image access via URLs)
+  - Allowed MIME types: `image/jpeg`, `image/png`, `image/gif`, `image/webp`
+  - Max file size: 5MB per image
+  - File name template: `{userId}/{timestamp}-{random}.{extension}`
+  - Enable RLS policies for authenticated users to upload/delete their own images
+- **Implementation Steps**:
+  - Update Post model: Add `images: [{ type: String }]` field to store image URLs
+  - Modify `CreatePostModal` to include image upload UI with drag-and-drop
+  - Support up to 4 images per post with preview functionality
+  - Add image compression client-side before upload (target: < 1MB)
+  - Update post display components to show image gallery
+  - Handle image cleanup when posts are deleted 
 

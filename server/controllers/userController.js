@@ -248,9 +248,19 @@ const searchUsers = async (req, res) => {
       return res.status(400).json({ message: 'Search query must be at least 2 characters' });
     }
     
-    const users = await User.find({
-      username: { $regex: q, $options: 'i' }
-    })
+    // Escape special regex characters to prevent regex errors
+    const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Build query - exclude current user if authenticated
+    const query = { username: { $regex: escapedQuery, $options: 'i' } };
+    
+    // If user is authenticated, exclude them from results
+    if (req.user && req.user.id) {
+      // The User model uses Supabase ID as _id
+      query._id = { $ne: req.user.id };
+    }
+    
+    const users = await User.find(query)
     .select('username profilePicture bio')
     .limit(20);
     
