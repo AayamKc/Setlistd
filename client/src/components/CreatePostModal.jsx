@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { postsAPI } from '../utils/api'
+import React, { useState, useEffect } from 'react'
+import { postsAPI, usersAPI } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 
 const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null }) => {
@@ -7,8 +7,24 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [userProfile, setUserProfile] = useState(null)
 
   const maxLength = 1000
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.user_metadata?.username && isOpen) {
+        try {
+          const response = await usersAPI.getUserProfile(user.user_metadata.username)
+          setUserProfile(response.data)
+        } catch (error) {
+          console.error('Error fetching user profile:', error)
+        }
+      }
+    }
+    
+    fetchUserProfile()
+  }, [user, isOpen])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -74,11 +90,19 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
         <form onSubmit={handleSubmit} className="p-4">
           {/* User Info */}
           <div className="flex items-center space-x-3 mb-4">
-            <img
-              src={user?.user_metadata?.profilePicture || '/default-avatar.png'}
-              alt={user?.user_metadata?.username}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            {userProfile?.profilePicture ? (
+              <img
+                src={userProfile.profilePicture}
+                alt={userProfile.username}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                <span className="text-gray-400 text-lg">
+                  {(user?.user_metadata?.username || user?.email)?.[0]?.toUpperCase() || '?'}
+                </span>
+              </div>
+            )}
             <div>
               <p className="font-semibold text-white">
                 {user?.user_metadata?.username || user?.email}
