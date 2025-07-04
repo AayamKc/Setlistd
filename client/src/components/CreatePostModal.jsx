@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { postsAPI, usersAPI } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../utils/supabase'
+import Toast from './Toast'
+import { compressImage } from '../utils/imageCompression'
 
 const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null }) => {
   const { user } = useAuth()
@@ -8,6 +11,10 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [userProfile, setUserProfile] = useState(null)
+  const [selectedImages, setSelectedImages] = useState([])
+  const [imageUrls, setImageUrls] = useState([])
+  const [toast, setToast] = useState(null)
+  const fileInputRef = useRef(null)
 
   const maxLength = 1000
 
@@ -26,6 +33,123 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
     fetchUserProfile()
   }, [user, isOpen])
 
+  // Clean up preview URLs when component unmounts or images change
+  useEffect(() => {
+    return () => {
+      imageUrls.forEach(url => URL.revokeObjectURL(url))
+    }
+  }, [imageUrls])
+
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files)
+    const maxImages = 4
+    const maxSizeInMB = 5
+    
+    // Check if adding these images would exceed the limit
+    if (selectedImages.length + files.length > maxImages) {
+      setToast({ 
+        message: `You can only upload up to ${maxImages} images`, 
+        type: 'error' 
+      })
+      return
+    }
+
+    // Validate file types and sizes
+    const validFiles = files.filter(file => {
+      const isValidType = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)
+      const isValidSize = file.size <= maxSizeInMB * 1024 * 1024
+      
+      if (!isValidType) {
+        setToast({ 
+          message: `${file.name} is not a valid image type`, 
+          type: 'error' 
+        })
+        return false
+      }
+      
+      if (!isValidSize) {
+        setToast({ 
+          message: `${file.name} exceeds ${maxSizeInMB}MB size limit`, 
+          type: 'error' 
+        })
+        return false
+      }
+      
+      return true
+    })
+
+    if (validFiles.length > 0) {
+      const newImages = [...selectedImages, ...validFiles]
+      setSelectedImages(newImages)
+      
+      // Create preview URLs
+      const newUrls = validFiles.map(file => URL.createObjectURL(file))
+      setImageUrls([...imageUrls, ...newUrls])
+    }
+
+    // Reset input value to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const removeImage = (index) => {
+    const newImages = selectedImages.filter((_, i) => i !== index)
+    const newUrls = imageUrls.filter((_, i) => i !== index)
+    
+    // Clean up the removed preview URL
+    URL.revokeObjectURL(imageUrls[index])
+    
+    setSelectedImages(newImages)
+    setImageUrls(newUrls)
+  }
+
+  const uploadImages = async () => {
+    const uploadedUrls = []
+    
+    for (let i = 0; i < selectedImages.length; i++) {
+      const file = selectedImages[i]
+      
+      try {
+        // Compress the image if it's larger than 1MB
+        let fileToUpload = file
+        if (file.size > 1024 * 1024) {
+          setToast({ 
+            message: `Compressing ${file.name}...`, 
+            type: 'info' 
+          })
+          fileToUpload = await compressImage(file, 1200, 1200, 0.8)
+        }
+        
+        const timestamp = Date.now()
+        const random = Math.random().toString(36).substring(2, 9)
+        const extension = file.name.split('.').pop()
+        const fileName = `${user.id}/${timestamp}-${random}.${extension}`
+
+        const { data, error } = await supabase.storage
+          .from('post-images')
+          .upload(fileName, fileToUpload)
+
+        if (error) throw error
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('post-images')
+          .getPublicUrl(fileName)
+
+        uploadedUrls.push({
+          type: 'image',
+          url: publicUrl
+        })
+      } catch (error) {
+        console.error('Error uploading image:', error)
+        throw new Error(`Failed to upload ${file.name}`)
+      }
+    }
+    
+    return uploadedUrls
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -43,10 +167,22 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
     setError('')
 
     try {
+      // Upload images first if any
+      let uploadedMedia = []
+      if (selectedImages.length > 0) {
+        try {
+          uploadedMedia = await uploadImages()
+        } catch (uploadError) {
+          setError(uploadError.message)
+          setIsSubmitting(false)
+          return
+        }
+      }
+
       const postData = {
         content: content.trim(),
         eventId: attachedEvent?._id || null,
-        media: [] // TODO: Add media upload functionality
+        media: uploadedMedia
       }
 
       const response = await postsAPI.createPost(postData)
@@ -57,6 +193,8 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
       
       // Reset form and close modal
       setContent('')
+      setSelectedImages([])
+      setImageUrls([])
       onClose()
     } catch (error) {
       console.error('Error creating post:', error)
@@ -69,22 +207,30 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-secondary rounded-lg border border-primary max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-primary">
-            Create Post
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-secondary rounded-lg border border-primary max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-primary">
+              Create Post
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-4">
@@ -148,6 +294,34 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
             </div>
           )}
 
+          {/* Image Preview */}
+          {imageUrls.length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-600 mb-2">Selected images:</p>
+              <div className="grid grid-cols-2 gap-2">
+                {imageUrls.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={url}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Remove image"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Error Message */}
           {error && (
             <div className="mt-4 p-3 bg-red-100 text-red-600 rounded-lg text-sm">
@@ -158,17 +332,35 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
           {/* Actions */}
           <div className="flex items-center justify-between mt-6">
             <div className="flex space-x-2">
-              {/* TODO: Add media upload button */}
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                multiple
+                onChange={handleImageSelect}
+                className="hidden"
+                disabled={isSubmitting || selectedImages.length >= 4}
+              />
+              
+              {/* Media upload button */}
               <button
                 type="button"
-                className="p-2 text-gray-500 hover:text-primary-dark transition-colors"
-                title="Add photo (coming soon)"
-                disabled
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2 text-gray-500 hover:text-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={selectedImages.length >= 4 ? "Maximum 4 images allowed" : "Add photo"}
+                disabled={isSubmitting || selectedImages.length >= 4}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </button>
+              
+              {selectedImages.length > 0 && (
+                <span className="text-sm text-gray-500 self-center">
+                  {selectedImages.length}/4 images
+                </span>
+              )}
             </div>
 
             <div className="flex space-x-2">
@@ -192,6 +384,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated, attachedEvent = null 
         </form>
       </div>
     </div>
+    </>
   )
 }
 
