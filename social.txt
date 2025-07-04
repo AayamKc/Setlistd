@@ -1,0 +1,87 @@
+# User Following Feature Implementation Plan
+
+## Current State Summary
+✅ **Backend is complete** - All endpoints and logic exist in userController.js and userRoutes.js
+⚠️ **Frontend needs work** - API client has wrong endpoints, no UI for viewing followers/following
+
+## Backend Endpoints (Already Implemented)
+- `POST /api/users/follow/:userId` - Follow a user
+- `DELETE /api/users/follow/:userId` - Unfollow a user
+- `GET /api/users/:userId/followers` - Get user's followers list
+- `GET /api/users/:userId/following` - Get user's following list
+
+## Implementation Phases
+
+### Phase 1: Fix Core Issues (Priority: Critical)
+1. **Fix API client endpoints** in `/client/src/utils/api.js`:
+   - Current (wrong):
+     ```javascript
+     followUser: (userId) => api.put(`/api/users/${userId}/follow`),
+     unfollowUser: (userId) => api.put(`/api/users/${userId}/unfollow`),
+     ```
+   - Should be:
+     ```javascript
+     followUser: (userId) => api.post(`/api/users/follow/${userId}`),
+     unfollowUser: (userId) => api.delete(`/api/users/follow/${userId}`),
+     ```
+   - Add missing methods:
+     ```javascript
+     getUserFollowers: (userId) => api.get(`/api/users/:userId/followers`),
+     getUserFollowing: (userId) => api.get(`/api/users/:userId/following`),
+     ```
+
+### Phase 2: Create Following UI Components (Priority: High)
+1. **FollowModal Component** (`/client/src/components/FollowModal.jsx`):
+   - Modal with tabs for "Followers" and "Following"
+   - Search/filter functionality within lists
+   - Infinite scroll or pagination for large lists
+   - Integration with FollowersList component
+
+2. **FollowersList Component** (`/client/src/components/FollowersList.jsx`):
+   - Reusable component for displaying user lists
+   - Shows: avatar, username, bio preview, follow button
+   - Follow/unfollow buttons with optimistic updates
+   - Click username/avatar to navigate to user profile
+   - Loading and empty states
+
+3. **Update ProfileHeader** (`/client/src/components/ProfileHeader.jsx`):
+   - Make follower/following count numbers clickable
+   - Open FollowModal on click with appropriate tab
+   - Add cursor-pointer and hover effects to counts
+
+### Phase 3: Enhance Discovery (Priority: Medium)
+1. **UserSearchResults Enhancement**:
+   - Add follow/unfollow buttons to each search result
+   - Show current follow status
+   - Optimistic UI updates on follow/unfollow
+
+2. **Toast Notifications**:
+   - Success: "You are now following @username"
+   - Success: "You have unfollowed @username"
+   - Error: "Failed to follow/unfollow user"
+   - Use existing Toast component
+
+### Phase 4: Testing Checklist
+- [ ] Fix API client methods and verify endpoints work
+- [ ] Test follow/unfollow from profile page
+- [ ] Test followers/following list display
+- [ ] Test follow/unfollow from within modal
+- [ ] Test follow/unfollow from search results
+- [ ] Verify follower counts update correctly
+- [ ] Test error handling and toast notifications
+- [ ] Test with users who have 0, 1, and many followers
+- [ ] Verify authentication is required for all actions
+
+## Future Enhancements (Not in Initial Scope)
+- Suggested users based on mutual concerts/artists
+- "Users who attended this concert" feature on concert pages
+- Following-only activity feed on homepage
+- Mutual followers display ("Followed by X users you follow")
+- Follow notifications system
+- Private profile handling in follow flow
+
+## Technical Notes
+- User model already has followers/following arrays
+- Backend properly updates both users in a follow action
+- Authentication middleware protects all follow endpoints
+- Frontend uses React Context for auth state management

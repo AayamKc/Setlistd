@@ -2,11 +2,14 @@ import { useState, useRef } from 'react'
 import api from '../utils/api'
 import EditProfileModal from './EditProfileModal'
 import CatalogModal from './CatalogModal'
+import FollowModal from './FollowModal'
 import Toast from './Toast'
 
 function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onProfileUpdate }) {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showCatalogModal, setShowCatalogModal] = useState(false)
+  const [showFollowModal, setShowFollowModal] = useState(false)
+  const [followModalTab, setFollowModalTab] = useState('followers')
   const [uploadingProfile, setUploadingProfile] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [addingConcert, setAddingConcert] = useState(false)
@@ -308,7 +311,23 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
                 {/* Stats */}
                 <div className="flex gap-6">
                   {stats.map((stat) => (
-                    <div key={stat.label} className="text-center">
+                    <div 
+                      key={stat.label} 
+                      className={`text-center ${
+                        stat.label === 'Following' || stat.label === 'Followers' 
+                          ? 'cursor-pointer hover:opacity-80 transition-opacity' 
+                          : ''
+                      }`}
+                      onClick={() => {
+                        if (stat.label === 'Followers') {
+                          setFollowModalTab('followers');
+                          setShowFollowModal(true);
+                        } else if (stat.label === 'Following') {
+                          setFollowModalTab('following');
+                          setShowFollowModal(true);
+                        }
+                      }}
+                    >
                       <div className="text-2xl font-bold text-primary">{stat.value}</div>
                       <div className="text-sm text-gray-500">{stat.label}</div>
                     </div>
@@ -339,7 +358,7 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
                         className={`px-6 py-2 rounded-lg transition ${
                           isFollowing
                             ? 'bg-gray-700 text-primary hover:bg-gray-600'
-                            : 'bg-accent text-secondary hover:bg-opacity-90'
+                            : 'bg-primary text-secondary hover:bg-primary-dark'
                         }`}
                       >
                         {isFollowing ? 'Following' : 'Follow'}
@@ -386,6 +405,15 @@ function ProfileHeader({ profile, isOwnProfile, isFollowing, onFollowToggle, onP
           onClose={() => setToast(null)}
         />
       )}
+
+      {/* Follow Modal */}
+      <FollowModal
+        isOpen={showFollowModal}
+        onClose={() => setShowFollowModal(false)}
+        userId={profile._id}
+        username={profile.username}
+        initialTab={followModalTab}
+      />
     </div>
   )
 }

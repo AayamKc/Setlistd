@@ -6,6 +6,7 @@ import Header from './Header'
 import ProfileHeader from './ProfileHeader'
 import ProfileTabs from './ProfileTabs'
 import ProfileContent from './ProfileContent'
+import Toast from './Toast'
 
 function UserProfile() {
   const { username } = useParams()
@@ -16,6 +17,7 @@ function UserProfile() {
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('attended')
   const [isFollowing, setIsFollowing] = useState(false)
+  const [toast, setToast] = useState(null)
 
   const isOwnProfile = user?.user_metadata?.username === username
 
@@ -54,7 +56,7 @@ function UserProfile() {
 
   const handleFollowToggle = async () => {
     if (!user) {
-      // Redirect to login or show login modal
+      setToast({ message: 'Please log in to follow users', type: 'error' })
       return
     }
 
@@ -66,6 +68,7 @@ function UserProfile() {
           ...prev,
           followers: prev.followers.filter(f => f._id !== user.id)
         }))
+        setToast({ message: `You have unfollowed @${profile.username}`, type: 'success' })
       } else {
         await api.post(`/api/users/follow/${profile._id}`)
         setIsFollowing(true)
@@ -73,9 +76,14 @@ function UserProfile() {
           ...prev,
           followers: [...prev.followers, { _id: user.id }]
         }))
+        setToast({ message: `You are now following @${profile.username}`, type: 'success' })
       }
     } catch (error) {
       console.error('Error toggling follow:', error)
+      setToast({ 
+        message: `Failed to ${isFollowing ? 'unfollow' : 'follow'} user`, 
+        type: 'error' 
+      })
     }
   }
 
@@ -145,6 +153,14 @@ function UserProfile() {
           isOwnProfile={isOwnProfile}
         />
       </div>
+      
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }

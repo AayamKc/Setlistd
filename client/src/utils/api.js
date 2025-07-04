@@ -42,8 +42,10 @@ export const eventsAPI = {
 export const usersAPI = {
   searchUsers: (query) => api.get('/api/users/search', { params: { q: query } }),
   getUserProfile: (username) => api.get(`/api/users/${username}`),
-  followUser: (userId) => api.put(`/api/users/${userId}/follow`),
-  unfollowUser: (userId) => api.put(`/api/users/${userId}/unfollow`),
+  followUser: (userId) => api.post(`/api/users/follow/${userId}`),
+  unfollowUser: (userId) => api.delete(`/api/users/follow/${userId}`),
+  getUserFollowers: (userId) => api.get(`/api/users/${userId}/followers`),
+  getUserFollowing: (userId) => api.get(`/api/users/${userId}/following`),
 }
 
 export const postsAPI = {
