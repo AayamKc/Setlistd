@@ -13,11 +13,16 @@ const Footer = () => {
           </div>
           
           <div className="footer-section">
-            <h4 className="text-lg font-bold mb-4">Developer</h4>
-            <p>Developed by <strong>Aayam Kc</strong></p>
+            <h4 className="text-lg font-bold mb-4">Developers</h4>
+            <p>Developed by <strong>Aayam Kc</strong> and <strong>Eston Kuwahara</strong></p>
             <p>
               <a href="mailto:kcaayam04@gmail.com" className="hover:text-white">
                 kcaayam04@gmail.com
+              </a>
+            </p>
+            <p>
+              <a href="mailto:eston.kuwahara@emory.edu" className="hover:text-white">
+                eston.kuwahara@emory.edu
               </a>
             </p>
           </div>
