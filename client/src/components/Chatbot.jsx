@@ -50,7 +50,7 @@ const Chatbot = () => {
         parts: [{ text: msg.text }],
       }));
 
-      const res = await axios.post('http://localhost:3000/api/chatbot', {
+      const res = await axios.post('http://localhost:3000/api/chatbot/', {
         message: input,
         history: history,
       });

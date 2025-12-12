@@ -102,7 +102,7 @@ const handleChat = async (req, res) => {
       return res.status(400).json({ error: 'Message is required.' });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro', tools });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash', tools });
 
     const chat = model.startChat({
       history: history || [],
