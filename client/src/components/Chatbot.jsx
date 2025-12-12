@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 
 // Simple bot icon
 const BotIcon = () => (
@@ -50,7 +50,7 @@ const Chatbot = () => {
         parts: [{ text: msg.text }],
       }));
 
-      const res = await axios.post('http://localhost:3000/api/chatbot/', {
+      const res = await api.post('/api/chatbot/', {
         message: input,
         history: history,
       });

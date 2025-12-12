@@ -91,57 +91,62 @@ async function searchEvents({ query, city, from_date, to_date }) {
 
 // The main controller function to handle chat requests
 const handleChat = async (req, res) => {
+  console.log('=== CHATBOT REQUEST DEBUG ===');
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  console.log('Method:', req.method);
+  
   try {
+    console.log('Checking API key...');
     if (!process.env.GEMINI_API_KEY) {
+      console.log('ERROR: No API key found');
       return res.status(500).json({ error: 'The chatbot is not configured on the server.' });
     }
+    console.log('API key exists');
 
     const { message, history } = req.body;
+    console.log('Message:', message);
+    console.log('History length:', history?.length || 0);
 
     if (!message) {
+      console.log('ERROR: No message provided');
       return res.status(400).json({ error: 'Message is required.' });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash', tools });
+    console.log('Creating Gemini model...');
+    // Start with basic model without tools to test basic functionality
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-pro-latest',
+      systemInstruction: "You are a Concert Concierge chatbot for Setlistd, a concert discovery platform. Help users find concerts, artists, and venues. Be friendly and helpful."
+    });
+    console.log('Model created');
 
+    console.log('Starting chat...');
     const chat = model.startChat({
       history: history || [],
     });
+    console.log('Chat started');
 
+    console.log('Sending message to Gemini...');
     const result = await chat.sendMessage(message);
-    const response = result.response;
+    console.log('Got response from Gemini');
+    
+    const text = result.response.text();
+    console.log('Response text extracted:', text.substring(0, 100));
+    
+    res.json({ response: text });
 
-    if (response.functionCalls && response.functionCalls.length > 0) {
-      const call = response.functionCalls[0];
-      console.log('[AI] Function call requested:', call.name, call.args);
-
-      // Call the tool function
-      const toolResult = await searchEvents(call.args);
-
-      // Send the tool result back to the model
-      const result2 = await chat.sendMessage([
-        {
-          functionResponse: {
-            name: 'searchEvents',
-            response: toolResult,
-          },
-        },
-      ]);
-      
-      // Safely get the model's final text response
-      const finalResponseText = result2.response?.candidates?.[0]?.content?.parts?.[0]?.text;
-      res.json({ response: finalResponseText || "I was able to find some information, but couldn't formulate a response." });
-
-    } else if (response.candidates && response.candidates.length > 0) {
-      // If it's a simple text response, safely get it
-      const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
-      res.json({ response: text || "I'm not sure how to respond to that." });
-    } else {
-      res.json({ response: "I'm not sure how to respond to that. Please try asking about concerts." });
-    }
   } catch (error) {
     console.error('Chatbot controller error:', error.message);
     console.error('Full error object:', error);
+    
+    // Handle quota exceeded errors specifically
+    if (error.message.includes('quota') || error.message.includes('429')) {
+      return res.status(429).json({ 
+        error: 'The chatbot is temporarily unavailable due to quota limits. Please try again later.' 
+      });
+    }
+    
     res.status(500).json({ error: 'An error occurred while processing your message.' });
   }
 };
