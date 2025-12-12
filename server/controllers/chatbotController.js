@@ -4,7 +4,8 @@ const axios = require('axios');
 
 // Initialize the Gemini client
 if (!process.env.GEMINI_API_KEY) {
-  throw new Error('GEMINI_API_KEY is not set in the environment variables.');
+  console.error('FATAL ERROR: GEMINI_API_KEY is not set in the environment variables.');
+  // We don't throw here to allow the server to start, but the chatbot will not work.
 }
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -45,6 +46,12 @@ const tools = [
 // The actual function that implements the "searchEvents" tool
 async function searchEvents({ query, city, from_date, to_date }) {
   console.log(`[Tool Execution] Searching events with:`, { query, city, from_date, to_date });
+
+  if (!process.env.SEATGEEK_CLIENT_ID || !process.env.SEATGEEK_CLIENT_SECRET) {
+    console.error('[Tool Error] SeatGeek API keys are not configured on the server.');
+    return { error: 'The server is not configured for event searches. Missing API keys.' };
+  }
+
   try {
     const params = {
       q: query || 'concert', // Default to 'concert' if no query
@@ -85,6 +92,10 @@ async function searchEvents({ query, city, from_date, to_date }) {
 // The main controller function to handle chat requests
 const handleChat = async (req, res) => {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'The chatbot is not configured on the server.' });
+    }
+
     const { message, history } = req.body;
 
     if (!message) {
@@ -117,19 +128,20 @@ const handleChat = async (req, res) => {
         },
       ]);
       
-      // Get the model's final text response
-      const finalResponse = result2.response.candidates[0].content.parts[0].text;
-      res.json({ response: finalResponse });
+      // Safely get the model's final text response
+      const finalResponseText = result2.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+      res.json({ response: finalResponseText || "I was able to find some information, but couldn't formulate a response." });
 
     } else if (response.candidates && response.candidates.length > 0) {
-      // If it's a simple text response
-      const text = response.candidates[0].content.parts[0].text;
-      res.json({ response: text });
+      // If it's a simple text response, safely get it
+      const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
+      res.json({ response: text || "I'm not sure how to respond to that." });
     } else {
       res.json({ response: "I'm not sure how to respond to that. Please try asking about concerts." });
     }
   } catch (error) {
-    console.error('Chatbot controller error:', error);
+    console.error('Chatbot controller error:', error.message);
+    console.error('Full error object:', error);
     res.status(500).json({ error: 'An error occurred while processing your message.' });
   }
 };
