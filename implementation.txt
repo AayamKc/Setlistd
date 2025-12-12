@@ -1,0 +1,70 @@
+This document outlines the step-by-step implementation plan to integrate a "Concert Concierge" chatbot into the Setlistd application using the Google Gemini API.
+
+**Part 1: Your Action Required (Prerequisites)**
+
+You must complete these steps before I can begin the implementation.
+
+*   **Step 1: Get Your Google Gemini API Key**
+    1.  Go to the Google AI Studio: https://aistudio.google.com/
+    2.  Sign in with your Google account.
+    3.  Create a new project or use an existing one.
+    4.  Click on the "Get API key" option to generate a new API key.
+
+*   **Step 2: Store Your API Key Securely**
+    1.  In your project, navigate to the `server/` directory.
+    2.  Create a new file and name it `.env`.
+    3.  Open the `.env` file and add the following line, replacing `YOUR_API_KEY_HERE` with the key you just generated:
+        ```
+        GEMINI_API_KEY="YOUR_API_KEY_HERE"
+        ```
+    4.  Your project's main `.gitignore` file is already configured to ignore `.env` files, so your key will not be accidentally committed to git.
+
+**Part 2: My Implementation Plan**
+
+Once you have completed Part 1, I will proceed with the following phases.
+
+**Phase 1: Backend Implementation (Server)**
+
+*   **Step 1: Install Dependencies**
+    *   I will add the `@google/generative-ai` package to the `server/package.json` and install it.
+
+*   **Step 2: Create Chatbot Controller**
+    *   I will create a new file: `server/controllers/chatbotController.js`.
+    *   This file will contain the core logic for interacting with the Gemini API.
+
+*   **Step 3: Initialize Gemini Client**
+    *   In the new controller, I will initialize the Gemini client, loading the API key you provided in the `.env` file.
+
+*   **Step 4: Define Chatbot "Tools"**
+    *   I will define a function, `searchEvents`, that the AI can use. This function will act as a bridge to your existing SeatGeek API logic, allowing the chatbot to search for concerts based on parameters like artist, city, and date.
+
+*   **Step 5: Create Chat Handler**
+    *   I will create the main `handleChat` function. This function will take a user's message, send it to the Gemini model along with the available tools, and process the model's response to either answer a question or use a tool.
+
+*   **Step 6: Create Chatbot Route**
+    *   I will create a new route file: `server/routes/chatbotRoutes.js`.
+    *   This file will define the `POST /api/chatbot` endpoint, which will be linked to the `handleChat` function.
+
+*   **Step 7: Mount Route in Server**
+    *   I will update `server/server.js` to use the new chatbot routes.
+
+**Phase 2: Frontend Implementation (Client)**
+
+*   **Step 1: Create Chatbot Component**
+    *   I will create a new React component file: `client/src/components/Chatbot.jsx`.
+
+*   **Step 2: Build the UI**
+    *   I will design a user-friendly chat interface. This will likely be a floating button on the bottom-right of the screen that opens a chat window.
+
+*   **Step 3: Manage State**
+    *   I will implement the state management for the conversation history, loading status, and user input within the React component.
+
+*   **Step 4: Connect Frontend to Backend**
+    *   I will write the logic to call the `/api/chatbot` endpoint on your server when a user sends a message and display the returned response in the chat window.
+
+*   **Step 5: Integrate Component**
+    *   I will add the new `<Chatbot />` component to your main `App.jsx` file so it is available across the entire application.
+
+**Phase 3: Enhancements (Future Step)**
+
+*   After the core functionality is working, I can enhance the chatbot to return rich, interactive components (like `ConcertCard`s) directly in the chat window instead of just plain text for a more integrated experience.

@@ -10,6 +10,7 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const artistRoutes = require('./routes/artistRoutes');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -46,6 +47,9 @@ app.use('/api/users', userRoutes);
 
 // Post Routes
 app.use('/api/posts', postRoutes);
+
+// Chatbot Routes
+app.use('/api/chatbot', chatbotRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
